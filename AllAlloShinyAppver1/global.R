@@ -15,25 +15,33 @@ library(shinycssloaders) # Adds spinner icon to loading outputs.
 library(shinydashboard) # The layout used for the ui page.
 library(leaflet) # Map making. Leaflet is more supported for shiny.
 library(leaflet.extras)
+library(leafem) #leaflet extention.
 library(dplyr) # Used to filter data for plots.
 library(ggplot2) # To create plots within the output for the app.
-library(sp)
+library(sp) #Uses SpatialPointsDataFrame function.
 library(DT) # Used to create more efficent data table output.
-
-library(sf) #to read and work with shapefiles
-library(leafem) #leaflet extention.
-
 library(rio) #to import RData table from external source
 library(readr) #to read RData format from external source
 
-library(scales)
-library(lattice)
+# Libraries I'm not sure if we need anymore...
+# library(scales)
+# library(lattice)
+
+
 
 FileIn <- import("data/AllInput_verA.RData")
 
-# FileIn <- read.csv("data/AllInput_verA.csv"), stringsAsFactors = FALSE, encoding="UTF-8")
-# FileIn <- readRDS("data/AllInput_verA.rds")
 
+###########################################################################################################################
+###########################################################################################################################
+# Sec 1c.  MapDeck()
+
+library(mapdeck)
+library(leaflet.mapboxgl)
+
+
+access_token <- "pk.eyJ1IjoicmphbWVzd3N3YyIsImEiOiJjazllcndyb20wNDFpM2huYWRhdmpieW1vIn0.N9V48xEQF4EBsLgQ7j5SGA"
+style_url <- "mapbox://styles/rjameswswc/ck9lsb9k503nq1ipkuyyi4wlq"
 ###########################################################################################################################
 ###########################################################################################################################
 # Sec 1b. Custom Functions, Values and Lists

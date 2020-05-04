@@ -30,13 +30,27 @@ ui <- dashboardPage(
   
   dashboardBody(
     tabsetPanel(
-      tabPanel("Map", 
-               fluidRow(withSpinner(leafletOutput("mapA"))),
+      ##MapA
+      tabPanel("Mapdeck Map", 
+               withSpinner(mapdeckOutput("mapA"))
+               ),
+      ##MapB
+      tabPanel("Leaflet.mapboxgl Map", 
+               fluidRow(withSpinner(leafletOutput("mapB"))),
                fluidRow(
                  box(withSpinner(plotOutput("barplotA"))),
                  box(withSpinner(plotOutput("barplotB")))
                )
       ),
+      ##MapC
+      tabPanel("Leaflet Traditonal Map Render using canvas", 
+               fluidRow(withSpinner(leafletOutput("mapC"))),
+               fluidRow(
+                 box(withSpinner(plotOutput("barplotC"))),
+                 box(withSpinner(plotOutput("barplotD")))
+               )
+               ),
+      ##Table
       tabPanel("Table", withSpinner(DT::dataTableOutput("mytable"))) #used with DT library
     ) #endtabsetPanel
   ) #enddashboardBody
