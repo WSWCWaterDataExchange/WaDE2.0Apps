@@ -1,0 +1,13 @@
+name: CRBShinyAppver2
+title: CRBShinyAppver2
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2247792
+bundleId: 3179759
+url: https://waterdataexchangewswc.shinyapps.io/CRBShinyAppver2/
+when: 1590176032.03858
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: gomap.js|README.md|styles.css|bonus code/converttablerdata.R|bonus code/PreProcessData.ipynb|bonus code/.ipynb_checkpoints/PreProcessData-checkpoint.ipynb|NotEssentialData

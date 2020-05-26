@@ -1,0 +1,12 @@
+name: AggPlotApp_ver1
+title: AggPlotApp_ver1
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2358624
+bundleId: 3191520
+url: https://waterdataexchangewswc.shinyapps.io/AggPlotApp_ver1/
+when: 1590506228.4448
+asMultiple: FALSE
+asStatic: FALSE

@@ -1,0 +1,13 @@
+name: AggDataApp_ver4
+title: AggDataApp_ver4
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2343437
+bundleId: 3179789
+url: https://waterdataexchangewswc.shinyapps.io/AggDataApp_ver4/
+when: 1590176425.00079
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: checking tables.R|bonus code/converttablerdata.R|NotEssentialData/AggBridge_BeneficialUses_FactsUTNMWY.csv|NotEssentialData/P_AggregatedAmounts_FactsUTNMWY.csv|NotEssentialData/VariablesUTNMWY.csv|NotEssentialData/WaterSourcesUTNMWY.csv
