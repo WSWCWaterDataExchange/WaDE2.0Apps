@@ -1,0 +1,13 @@
+name: AggDataApp
+title: AggDataApp
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2295124
+bundleId: 3153652
+url: https://waterdataexchangewswc.shinyapps.io/AggDataApp/
+when: 1589582711.1763
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: bonus code/converttablerdata.R|onus code/CountyAggSF.dbf|onus code/CountyAggSF.prj|onus code/CountyAggSF.shp|onus code/CountyAggSF.shx|NotEssentialData

@@ -1,0 +1,13 @@
+name: MapPODSite_CRBver2
+title: MapPODSite_CRBver2
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2571881
+bundleId: 3405525
+url: https://waterdataexchangewswc.shinyapps.io/MapPODSite_CRBver2/
+when: 1595024217.29075
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: gomap.js|Notes on Project.txt|README.md|styles.css
