@@ -15,8 +15,6 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
-    tags$head(tags$style(HTML(".sidebar { height: 90vh; overflow-y: auto; }" ))), # Adds scrollbar to Sidebar.
-    
     fluidRow(
       HTML("
         <html>
@@ -55,16 +53,35 @@ ui <- dashboardPage(
                  ")
              ),
              box(width = NULL, status="primary", title = "Inputs",
-                 actionButton(inputId="reset_input", label="Reset inputs"),
+                 actionButton(inputId="reset_input", label="Reset Inputs"),
+                 
+                 helpText("-------------", align = "center"),
+                 pickerInput(inputId='SiteTypeInput', label='Site Type', 
+                             choices=SiteTypeList, selected=SiteTypeList,
+                             multiple = TRUE),
+                 pickerInput(inputId='WaterSourceTypeInput', label='Watersource Type', 
+                             choices=WaterSourceTypeList, selected=WaterSourceTypeList,
+                             multiple = TRUE),
+                 pickerInput(inputId='AllocationOwnerInput', label='Allocation Owner', 
+                             choices=AllocationOwnerList, selected=AllocationOwnerList,
+                             multiple = TRUE),
+                 
+                 
                  helpText("-------------", align = "center"),
                  sliderInput("DateInput", "Priority Date (yyyy-mm-dd)",
                              min = as.Date("1850-01-01","%Y-%m-%d"),
                              max = as.Date("2016-09-09","%Y-%m-%d"),
                              value = c(as.Date("1850-01-01","%Y-%m-%d"), as.Date("2016-09-09","%Y-%m-%d")),
                              timeFormat="%Y-%m-%d"),
-                 checkboxGroupInput(inputId = 'RiverBasin', label = 'River Basin', choices = RiverBasinList, selected = RiverBasinList),
-                 checkboxGroupInput(inputId = "StateInput", label = "State", choices = StateList, selected = StateList),
-                 checkboxGroupInput(inputId = "BenUseInput", label = "Primary Benificial Use", choices = BenUseList, selected = BenUseList),
+                 pickerInput(inputId = 'RiverBasin', label = 'River Basin', 
+                             choices = RiverBasinList, selected = RiverBasinList,
+                             multiple = TRUE),
+                 pickerInput(inputId = "StateInput", label = "State", 
+                             choices = StateList, selected = StateList,
+                             multiple = TRUE),
+                 pickerInput(inputId = "BenUseInput", label = "Primary Benificial Use", 
+                             choices = BenUseList, selected = BenUseList,
+                             multiple = TRUE),
                  helpText("-------------", align = "center"),
                  helpText("Allocation Flow", align = "center"),
                  numericInput(inputId = "minAA_CFS", label = "Minimum CFS", value = 0,
@@ -86,22 +103,33 @@ ui <- dashboardPage(
                  tabsetPanel(
                    id = "tab_being_displayed", # will set input$tab_being_displayed
                    
+                   #All Sites Map
+                   tabPanel(title = "All Sites",
+                            withSpinner(mapdeckOutput(outputId = "mapAll", height = 600)),
+                            HTML("
+                      <h4 style='text-align:center'; class='parallax'> 
+                        <br>
+                        Point of Diversion Sites (click desired site on map for more info)
+                      </h4>
+                    "),
+                   ), #endtabPanel
                    
                    #Basins Sites Map
                    tabPanel(title = "River Basins",
-                            withSpinner(mapdeckOutput(outputId = "mapBasins", height = 800))
-                   ), #endtabPanel
-                  
-                   #All Sites Map
-                   tabPanel(title = "All Sites",
-                            withSpinner(mapdeckOutput(outputId = "mapAll", height = 600))
+                            withSpinner(mapdeckOutput(outputId = "mapBasins", height = 800)),
+                            HTML("
+                      <h4 style='text-align:center'; class='parallax'> 
+                        <br>
+                        Point of Diversion Sites (click desired site on map for more info)
+                      </h4>
+                    "),
                    ) #endtabPanel
                  ) # endtabsetPanel
              ),
              
              #Organizations API Table
              box(
-               width = NULL, 
+               width = NULL,
                status="info",
                h3(strong("Organizations"), align = "center"),
                div(style = 'overflow-x: scroll', DT::dataTableOutput('OrganizationsTable'))
@@ -120,7 +148,7 @@ ui <- dashboardPage(
                width = NULL, 
                status="info",
                h3(strong("VariableSpecifics"), align = "center"),
-               div(style = 'overflow-x: scroll', DT::dataTableOutput('VariableSpecifics'))
+               div(style = 'overflow-x: scroll', DT::dataTableOutput('VariableSpecificsTable'))
              ),
              
              #Methods API Table
@@ -156,5 +184,8 @@ ui <- dashboardPage(
              
       ) #endColumn
     ) #endFluidRow
+    
+    # tags$head(includeHTML(("google-analytics.html")))  # for use with Google Analytics
+    
   ) #enddashboardBody
 ) #enddashboardPage

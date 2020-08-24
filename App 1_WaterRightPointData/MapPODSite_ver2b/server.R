@@ -16,59 +16,25 @@ server <- function(input, output, session) {
                       max = as.Date("2016-09-09","%Y-%m-%d"),
                       value = c(as.Date("1850-01-01","%Y-%m-%d"), as.Date("2016-09-09","%Y-%m-%d")),
                       timeFormat="%Y-%m-%d")
-    updateCheckboxGroupInput(session, "StateInput", selected = StateList)
-    updateCheckboxGroupInput(session, "BenUseInput", selected = BenUseList)
+    updatePickerInput(session, "StateInput", selected = StateList)
+    updatePickerInput(session, "BenUseInput", selected = BenUseList)
     updateNumericInput(session, "minAA_CFS", value = 0)
     updateNumericInput(session, "maxAA_CFS", value = max(P_AlloLFSite$AA_CFS))
     updateNumericInput(session, "minAA_AF", value = 0)
     updateNumericInput(session, "maxAA_AF", value = max(P_AlloLFSite$AA_AF))
+    updatePickerInput(session, "SiteTypeInput", selected = SiteTypeList)
+    updatePickerInput(session, "WaterSourceTypeInput", selected = WaterSourceTypeList)
+    updatePickerInput(session, "AllocationOwnerInput", selected = AllocationOwnerList)
   })
   
-  
-  # #Change Inputs to allow only those needed for selected map
-  # observe({
-  #   
-  #   #Basin
-  #   if (input$tab_being_displayed == "Basin") {
-  #     stLabel = 'Basin State'
-  #     StateChoices = c("CA", "CO", "NM", "UT")
-  #     StateSelected = c("CA", "CO", "NM", "UT")
-  #     BenUseLabel = 'Basin Primary Benificial Use'
-  #     BenUseChoices =  c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire",
-  #                        "Industrial", "Livestock", "Mining", "Municipal", "Other",
-  #                        "Power", "Recharge", "Recreation", "Snow Making", "Storage", "Wildlife")
-  #     BenUseSelected = c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire",
-  #                        "Industrial", "Livestock", "Mining", "Municipal", "Other",
-  #                        "Power", "Recharge", "Recreation", "Snow Making", "Storage", "Wildlife")
-  #   }
-  #   
-  #   #Default
-  #   else {
-  #     stLabel = "State"
-  #     StateChoices = StateList
-  #     StateSelected = StateList
-  #     BenUseLabel = 'Primary Benificial Use'
-  #     BenUseChoices = BenUseList
-  #     BenUseSelected = BenUseList
-  #   }
-  #   
-  #   #Update the Input - State & BenUse
-  #   updateCheckboxGroupInput(session, inputId = "StateInput", label = stLabel,
-  #                            choices = StateChoices, selected = StateChoices)
-  #   updateCheckboxGroupInput(session, inputId = "BenUseInput", label = BenUseLabel,
-  #                            choices = BenUseChoices, selected = BenUseSelected)
-  # })
-  
-  ####### End Observe Functions ########
-  ##################################################################
-  
-  
-  
+
+
   ##################################################################
   ####### Reactive Data Sets ########
   
   #For Empty Plots before Mouse Selection
   emptydata <- reactive({NULL})
+  
   
   #Filter Allow Table - to filter down sites according to the user Inputs selection
   filter_TableAllo <- reactive({
@@ -80,7 +46,10 @@ server <- function(input, output, session) {
         (AA_CFS <= input$maxAA_CFS),
         (AA_AF >= input$minAA_AF),
         (AA_AF <= input$maxAA_AF),
-        (State %in% input$StateInput)
+        (State %in% input$StateInput),
+        (SiteTypeCV %in% input$SiteTypeInput),
+        (WaterSourceTypeCV %in% input$WaterSourceTypeInput),
+        (AllocationOwner %in% input$AllocationOwnerInput)
       )
   })
   
@@ -89,8 +58,8 @@ server <- function(input, output, session) {
   filter_MapSite_Basins <- reactive({
     P_SiteLFAllo_Basins %>%
       filter(
-        (WBenUse %in% input$BenUseInput),
         (Basin %in% input$RiverBasin),
+        (WBenUse %in% input$BenUseInput),
         (SiteUUID %in% filter_TableAllo()$SiteUUID)
       )
   })
@@ -127,6 +96,7 @@ server <- function(input, output, session) {
   output$mapBasins <- renderMapdeck({
     mapdeck(
       token = access_token,
+      style = style_url,
       location = c(-100.9349, 40.27901),
       zoom = 3.5)
   })
@@ -157,7 +127,7 @@ server <- function(input, output, session) {
       variables = c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire", "Flood Control",
                     "Industrial", "Livestock", "Mining", "Municipal", "Power", "Recharge", 
                     "Recreation", "Snow Making", "Storage", "Wildlife", "State Specific"), 
-      colours = c("#FFFF00FF", "#008000FF", "#0000FFFF", "#32CD32FF", "#FF0000FF", "#00FFFFFF",
+      colours = c("#006400FF", "#FFFF00FF", "#0000FFFF", "#32CD32FF", "#FF0000FF", "#00FFFFFF",
                   "#800080FF", "#FFD700FF", "#A52A2AFF", "#4B0082FF", "#FFA500FF", "#D2691EFF", 
                   "#FFC0CBFF", "#F0FFF0FF", "#F5DEB3FF", "#ADFF2FFF", "#808080FF"),  
       colour_type = "fill", 
@@ -200,31 +170,32 @@ server <- function(input, output, session) {
   ##################################################################
   ######## Create mapAll ########
   
-  #Base Map Creation
+  ##Base Map Creation
   output$mapAll <- renderMapdeck({
     mapdeck(
       token = access_token,
+      style = style_url,
       location = c(-100.9349, 40.27901),
       zoom = 3.5)
   })
   
-  # Incremental Changes to the Map
+  ##Incremental Changes to the Map
   observe({
     req(input$tab_being_displayed == "All Sites")
     
-    #Create row index on the fl using seq.int() function.
+    ##Create row index on the fl using seq.int() function.
     #For map click reaction.
     tempsite <- filter_MapSite_All()
     tempsite$SID <- seq.int(nrow(tempsite))
     
-    #Custom Category Legend
+    ##Custom Category Legend
+    #Create Use and Color list based in User Inputs and dictionary.
+    BenUseDictList <- input$BenUseInput
+    BenUseColDictList <- values(BenUseColorDict[BenUseDictList], USE.NAMES=FALSE)
+    
     l1 <- legend_element(
-      variables = c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire", "Flood Control",
-                    "Industrial", "Livestock", "Mining", "Municipal", "Power", "Recharge", 
-                    "Recreation", "Snow Making", "Storage", "Wildlife", "State Specific"), 
-      colours = c("#FFFF00FF", "#008000FF", "#0000FFFF", "#32CD32FF", "#FF0000FF", "#00FFFFFF",
-                  "#800080FF", "#FFD700FF", "#A52A2AFF", "#4B0082FF", "#FFA500FF", "#D2691EFF", 
-                  "#FFC0CBFF", "#F0FFF0FF", "#F5DEB3FF", "#ADFF2FFF", "#808080FF"),  
+      variables = BenUseDictList,
+      colours = BenUseColDictList,
       colour_type = "fill", 
       variable_type = "category",
       title = "Primary Beneficial Use",
@@ -240,8 +211,10 @@ server <- function(input, output, session) {
         id = "SiteUUID",
         lat = "Lat",
         lon = "Long",
+        stroke_colour = "#FFFFFFFF",
+        stroke_width = 200,
         fill_colour = "WBenUseColor",
-        radius = 1000,
+        radius = 2000,
         tooltip = "SiteUUID",
         auto_highlight = TRUE,
         update_view = FALSE,
@@ -282,22 +255,26 @@ server <- function(input, output, session) {
     #Reactive Dataset
     #This returns empty / shows nothing if null
     filteredSiteAPICall <- eventReactive(SQLInput, {
-      if (SQLInput == "") {
-        shiny::showNotification("No data", type = "error")
-        NULL
+      if (SQLInput == "" || is.null(SQLInput)) {
+        # return(shiny::showNotification("No data", type = "error"))
+        val <- emptydata()
       } else {
-        return(val <- fromJSON(outstring))
+        val <- fromJSON(outstring)
       }
+      return(val)
     })
     
     #Table OrganizationsTable
     output$OrganizationsTable <- DT::renderDataTable({
-      DT::datatable(filteredSiteAPICall()[[2]][1:7] , 
+      DT::datatable(filteredSiteAPICall()[[2]][1:7],
                     rownames = FALSE) %>% formatStyle(
                       columns=colnames(filteredSiteAPICall()[[2]][1:7]),
                       background = 'white',
                       color='black')
     })
+    
+    
+    
     
     #Table WaterSourcesTable
     output$WaterSourcesTable <- DT::renderDataTable({
@@ -462,7 +439,8 @@ server <- function(input, output, session) {
     
   })
   
-  ######## Create ALL Map API Tables ########
+  ######## End Create ALL Map API Tables ########
   ##################################################################
+  
   
 } #endServer

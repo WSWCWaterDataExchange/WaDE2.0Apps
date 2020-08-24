@@ -5,16 +5,16 @@ library(readr)
 setwd("C:\\Users\\rjame\\Documents\\RShinyAppPractice\\App 1_WaterRightPointData\\MapPODSite_ver2b\\data")
 
 #Allo LF Sites
-P_AlloLFSite <- read_csv("P_AlloLFSite.csv")
-export(P_AlloLFSite, "P_AlloLFSite.RData")
+P_AlloLFSite <- read_csv("P_AllowLJSite.csv")
+export(P_AlloLFSite, "P_AllowLJSite.RData")
 
 #Sites LF Allo
-P_SiteLFAllo <- read_csv("P_SiteLFAllo.csv")
-export(P_SiteLFAllo, "P_SiteLFAllo.RData")
+P_SiteLFAllo <- read_csv("P_SiteLJAllow.csv")
+export(P_SiteLFAllo, "P_SiteLJAllow.RData")
 
 #Sites_Basin LF Allo
-P_SiteLFAllo_Basin <- read_csv("P_SiteLFAllo_Basin.csv")
-export(P_SiteLFAllo_Basin, "P_SiteLFAllo_Basin.RData")
+P_SiteLFAllo_Basin <- read_csv("P_SiteLJAllow_Basin.csv")
+export(P_SiteLFAllo_Basin, "P_SiteLJAllow_Basin.RData")
 
 # #Sites_CRB LF Allo
 # P_SiteLFAllo_CRB <- read_csv("P_SiteLFAllo_CRB.csv")

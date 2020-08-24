@@ -15,6 +15,7 @@ library(rgdal)  # R Geospatial Dat Abstraction library, used for working with sh
 library(jsonlite)
 library(sf)
 
+library(hash) #for creating dictionaries
 
 ################################################################################################
 ################################################################################################
@@ -87,6 +88,106 @@ tablereturn <- 1
 selectedLocations <- P_SiteLFAllo[tablereturn,]
 SQLInput <- selectedLocations$SiteUUID
 
+
+#Create dict
+BenUseList <- c("Agricultural",
+                "Aquaculture",
+                "Commercial",
+                "Domestic",
+                "Environmental",
+                "Fire",
+                "Fish",
+                "Flood Control",
+                "Heating and Cooling",
+                "Industrial",
+                "Instream Flow",
+                "Livestock",
+                "Mining",
+                "Municipal",
+                "Power",
+                "Recharge",
+                "Recreation",
+                "Snow Making",
+                "State Specific",
+                "Storage",
+                "Wildlife",
+                "Unknown")
+
+BenUseColourList = c("#006400FF",
+                     "#9ACD32FF",
+                     "#FFFF00FF",
+                     "#0000FFFF",
+                     "#32CD32FF",
+                     "#FF4500FF",
+                     "#9370DBFF",
+                     "#00FFFFFF",
+                     "#FF69B4FF",
+                     "#800080FF",
+                     "#00BFFFFF",
+                     "#FFD700FF",
+                     "#A52A2AFF",
+                     "#4B0082FF",
+                     "#FFA500FF",
+                     "#D2691EFF",
+                     "#FFC0CBFF",
+                     "#F0FFF0FF",
+                     "#808080FF",
+                     "#F5DEB3FF",
+                     "#FF0000FF",
+                     "#D3D3D3FF")
+
+#Create the dict
+h <- hash()
+
+# set values
+h[["Agricultural"]] <-  "#006400FF"
+h[["Aquaculture"]] <-  "#9ACD32FF"
+h[["Commercial"]] <-  "#FFFF00FF"
+h[["Domestic"]] <-  "#0000FFFF"
+h[["Environmental"]] <-  "#32CD32FF"
+h[["Fire"]] <-  "#FF4500FF"
+h[["Fish"]] <-  "#9370DBFF"
+h[["Flood Control"]] <-  "#00FFFFFF"
+h[["Heating and Cooling"]] <-  "#FF69B4FF"
+h[["Industrial"]] <-  "#800080FF"
+h[["Instream Flow"]] <-  "#00BFFFFF"
+h[["Livestock"]] <-  "#FFD700FF"
+h[["Mining"]] <-  "#A52A2AFF"
+h[["Municipal"]] <-  "#4B0082FF"
+h[["Power"]] <-  "#FFA500FF"
+h[["Recharge"]] <-  "#D2691EFF"
+h[["Recreation"]] <-  "#FFC0CBFF"
+h[["Snow Making"]] <-  "#F0FFF0FF"
+h[["State Specific"]] <-  "#808080FF"
+h[["Storage"]] <-  "#F5DEB3FF"
+h[["Wildlife"]] <-  "#FF0000FF"
+h[["Unknown"]] <-  "#D3D3D3FF"
+
+#get keys
+keys(h)
+
+#get values
+values(h)
+
+##############################################
+
+#Create the dict
+b <- hash()
+
+b[BenUseList] <- BenUseColourList
+
+keys(b)
+
+values(b)
+
+returnthese <- c("Agricultural", "Commercial")
+returnthese
+b[returnthese]
+
+values(b[returnthese], USE.NAMES=FALSE)
+
+ylist <- values(b[returnthese], USE.NAMES=FALSE)
+ylist
 ################################################################################################
 ################################################################################################
 #Plotting

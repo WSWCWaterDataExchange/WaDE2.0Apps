@@ -95,6 +95,17 @@ names(USBR_UCRB_TributarySF@data)[names(USBR_UCRB_TributarySF@data)=="Reportin_6
 ################################################################################################
 #Tables Combine the the data
 
+idvalue = "TX_48401"
+ruyear = 2008
+tempCountySF <- CountySF %>% subset(ReportingUnitUUID %in% idvalue)
+tempAggAmountTable <- AggAmountTable %>% filter(
+  ReportingUnitID %in% tempCountySF$ReportingUnitID,
+  ReportYearCV %in% ruyear)
+tempAggAmountTable_2 <- left_join(x = tempAggAmountTable, y = PWaSoTable, by = "WaterSourceID")
+finalAFF <- tempAggAmountTable_2 %>% group_by(ReportYearCV, WaterSourceUUID) %>% summarise(SumAmouts = sum(Amount))
+
+
+
 
 CustomSF.df <- as(CustomSF, "data.frame")
 # write.csv(CustomSF.df,"CustomSFdf.csv", row.names = FALSE)

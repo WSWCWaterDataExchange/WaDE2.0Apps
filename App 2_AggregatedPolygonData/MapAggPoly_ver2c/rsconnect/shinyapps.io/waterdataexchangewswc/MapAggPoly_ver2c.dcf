@@ -1,0 +1,13 @@
+name: MapAggPoly_ver2c
+title: MapAggPoly_ver2c
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2601788
+bundleId: 3422146
+url: https://waterdataexchangewswc.shinyapps.io/MapAggPoly_ver2c/
+when: 1595436349.44498
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Notes on Process to Create.txt|bonus code/checking tables.R|bonus code/converttablerdata.R|bonus code/Pre Processing MapAgg Data.ipynb|bonus code/.ipynb_checkpoints/Pre Processing MapAgg Data-checkpoint.ipynb|NotEssentialData

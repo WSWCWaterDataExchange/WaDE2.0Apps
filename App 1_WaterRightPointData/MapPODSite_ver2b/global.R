@@ -17,6 +17,7 @@
 library(shiny) # How we create the app.
 library(shinycssloaders) # Adds spinner icon to loading outputs.
 library(shinydashboard) # The layout used for the ui page.
+library(shinyWidgets) # more options to work with shiny, like inputs
 library(mapdeck) # the mapping software.  Uses special access token.
 library(dplyr) # Used to filter data for plots.
 library(ggplot2) # To create plots within the output for the app.
@@ -26,7 +27,7 @@ library(readr) #to read RData format from external source
 library(rgdal)  # R Geospatial Dat Abstraction library, used for working with shapefiles.
 library(jsonlite)
 library(sf)
-library(shinyWidgets)
+library(hash) #for creating dictionaries
 
 ################################################################################################
 ################################################################################################
@@ -34,11 +35,11 @@ library(shinyWidgets)
 
 # MapDeck() Style and Token Acesses.
 access_token <- "pk.eyJ1IjoicmphbWVzd3N3YyIsImEiOiJjazllcndyb20wNDFpM2huYWRhdmpieW1vIn0.N9V48xEQF4EBsLgQ7j5SGA"
-style_url <- "mapbox://styles/rjameswswc/ckb71bkpc4e2j1jnwo3zy5nrx"
+style_url <- "mapbox://styles/mapbox/dark-v9"
 
 # Input Data
-P_AlloLFSite  <- import("data/P_AlloLFSite.RData") # Use this with filters to reduce amount of sites
-P_SiteLFAllo  <- import("data/P_SiteLFAllo.RData") # All sites
+P_AlloLFSite  <- import("data/P_AllowLJSite.RData") # Use this with filters to reduce amount of sites
+P_SiteLFAllo  <- import("data/P_SiteLJAllow.RData") # All sites
 P_SiteLFAllo_Basins  <- import("data/P_SiteLFAllo_Basin.RData") # River Basin Sites
 BasinsSF <- sf::st_read("data/BasinsSF.shp") # Colorado River Basin Shapefile
 
@@ -47,11 +48,107 @@ BasinsSF <- sf::st_read("data/BasinsSF.shp") # Colorado River Basin Shapefile
 ################################################################################################
 # Sec 3. Custom Lists
 
-BenUseList <- c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire", "Flood Control",
-                "Industrial", "Livestock", "Mining", "Municipal", "Other", "Power",
-                "Recharge", "Recreation", "Snow Making", "Storage", "Wildlife")
+BenUseList <- c("Agricultural",
+                "Aquaculture",
+                "Commercial",
+                "Domestic",
+                "Environmental",
+                "Fire",
+                "Fish",
+                "Flood Control",
+                "Heating and Cooling",
+                "Industrial",
+                "Instream Flow",
+                "Livestock",
+                "Mining",
+                "Municipal",
+                "Other",
+                "Power",
+                "Recharge",
+                "Recreation",
+                "Snow Making",
+                "Storage",
+                "Unknown",
+                "Wildlife")
+
+#BenUse & Color Dict
+BenUseColorDict <- hash() #creaqte blank dict
+BenUseColorDict[["Agricultural"]] <- "#006400FF"
+BenUseColorDict[["Aquaculture"]] <- "#9ACD32FF"
+BenUseColorDict[["Commercial"]] <- "#FFFF00FF"
+BenUseColorDict[["Domestic"]] <- "#0000FFFF"
+BenUseColorDict[["Environmental"]] <- "#32CD32FF"
+BenUseColorDict[["Fire"]] <- "#FF4500FF"
+BenUseColorDict[["Fish"]] <- "#9370DBFF"
+BenUseColorDict[["Flood Control"]] <- "#00FFFFFF"
+BenUseColorDict[["Heating and Cooling"]] <- "#FF69B4FF"
+BenUseColorDict[["Industrial"]] <- "#800080FF"
+BenUseColorDict[["Instream Flow"]] <- "#00BFFFFF"
+BenUseColorDict[["Livestock"]] <- "#FFD700FF"
+BenUseColorDict[["Mining"]] <- "#A52A2AFF"
+BenUseColorDict[["Municipal"]] <- "#4B0082FF"
+BenUseColorDict[["Other"]] <- "#808080FF"
+BenUseColorDict[["Power"]] <- "#FFA500FF"
+BenUseColorDict[["Recharge"]] <- "#D2691EFF"
+BenUseColorDict[["Recreation"]] <- "#FFC0CBFF"
+BenUseColorDict[["Snow Making"]] <- "#F0FFF0FF"
+BenUseColorDict[["Storage"]] <- "#F5DEB3FF"
+BenUseColorDict[["Unknown"]] <- "#D3D3D3FF"
+BenUseColorDict[["Wildlife"]] <- "#FF0000FF"
 
 StateList <- c("CA", "CO", "ID", "ND", "NM",
                "OK", "OR", "TX", "UT", "WA")
 
 RiverBasinList <- c("Colorado River Basin", "Rio Grande River Basin", "Columbia River Basin")
+
+SiteTypeList <- c(
+  "Abandoned",
+  "Aquifer",
+  "Canal / Ditch / Stream",
+  "Discharge Point",
+  "Diversion Point",
+  "Drain",
+  "Effluent",
+  "Exchange Plan",
+  "Gravity",
+  "Groundwater",
+  "Lake",
+  "Mine",
+  "Minimum Flow",
+  "Monitoring Well",
+  "Other",
+  "Pipeline",
+  "Point of Rediversion",
+  "Point of Return",
+  "Power Plant",
+  "Pump",
+  "Reach",
+  "Recharge Area",
+  "Reservoir",
+  "Seep",
+  "Spring",
+  "Storage",
+  "Sump",
+  "Surface & Groundwater",
+  "Surface Water",
+  "Unknown",
+  "Well",
+  "winter runoff")
+
+WaterSourceTypeList <- c(
+  "Groundwater",
+  "Other",
+  "Reservoir / Storage",
+  "Surface & Groundwater",
+  "Surface Water",
+  "Unknown")
+
+AllocationOwnerList <- c(
+  "US Bureau of Land Management",
+  "US Forest Service",
+  "Other")
+
+emptytable <- data.frame(Date=as.Date(character()),
+                         File=character(), 
+                         User=character(), 
+                         stringsAsFactors=FALSE)

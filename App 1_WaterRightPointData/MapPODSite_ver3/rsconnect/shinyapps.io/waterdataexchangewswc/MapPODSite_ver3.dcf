@@ -1,0 +1,13 @@
+name: MapPODSite_ver3
+title: MapPODSite_ver3
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2660837
+bundleId: 3502793
+url: https://waterdataexchangewswc.shinyapps.io/MapPODSite_ver3/
+when: 1597168444.29662
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: gomap.js|Notes on Project.txt|README.md|styles.css|bonus code|NotEssentialData
