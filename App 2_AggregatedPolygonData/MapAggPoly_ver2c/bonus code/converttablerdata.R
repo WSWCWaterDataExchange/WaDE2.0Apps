@@ -4,13 +4,9 @@ library(rio)
 library(readr)
 setwd("C:\\Users\\rjame\\Documents\\RShinyAppPractice\\App 2_AggregatedPolygonData\\MapAggPoly_ver2c\\data")
 
-#AggBridge_BeneficialUses Info
-ABBUF <- read_csv("AggBridge_BeneficialUses.csv")
-export(ABBUF, "BenUseTable.RData")
-
-#AggregatedAmounts Info
-AAF <- read_csv("AggregatedAmounts.csv")
-export(AAF, "AggAmountTable.RData")
+#AggregatedAmountswOrg Info
+AAFwO <- read_csv("P_AggregatedAmountswOrg.csv")
+export(AAFwO, "AggAmountTablewO.RData")
 
 #Variables Info
 V <- read_csv("Variables.csv")
@@ -24,3 +20,13 @@ export(WS, "PWaSoTable.RData")
 M <- read_csv("P_Methods.csv")
 export(M, "PMetTable.RData")
 
+
+
+#Code note Used
+# #AggBridge_BeneficialUses Info
+# ABBUF <- read_csv("AggBridge_BeneficialUses.csv")
+# export(ABBUF, "BenUseTable.RData")
+
+# #AggregatedAmounts Info
+# AAF <- read_csv("AggregatedAmounts.csv")
+# export(AAF, "AggAmountTable.RData")

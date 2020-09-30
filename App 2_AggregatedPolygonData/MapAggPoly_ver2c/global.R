@@ -1,6 +1,6 @@
 # App: MapAggPoly_ver2c
 # Sec 0. Code Purpose and Version Notes 
-# Date: 07/21/2020
+# Date: 09/01/2020
 # Purpose: To view annual aggegreated water use data across polygon areas across the Western United Sites.
 # Topic:
 #   1) Creating Aggregated Data Polygon Map App
@@ -16,6 +16,7 @@
 library(shiny) # How we create the app.
 library(shinycssloaders) # Adds spinner icon to loading outputs.
 library(shinydashboard) # The layout used for the ui page.
+library(shinyWidgets) # more options to work with shiny, like inputs
 library(leaflet) # Map making. Leaflet is more supported for shiny.
 library(leaflet.extras)
 library(leafem) #leaflet extention.
@@ -34,7 +35,7 @@ library(tidyverse)
 
 
 # Input Data: Tables
-AggAmountTable <- import("data/AggAmountTable.RData")  #aggreated amounts 
+AggAmountTable <- import("data/AggAmountTablewO.RData")  #aggreated amounts 
 VarTable <- import("data/VarTable.RData") # variables
 PWaSoTable <- import("data/PWaSoTable.RData") #Water Sources
 PMetTable <- import("data/PMetTable.RData") #Methods
@@ -110,6 +111,11 @@ AllReportYearList = c(1971,	1972,	1973,	1974,	1975,	1976,	1977,
                       1999,	2000,	2001,	2002,	2003,	2004,	2005,
                       2006,	2007,	2008,	2009,	2010,	2011,	2012,
                       2013,	2014,	2015,	2016,	2017,	2018)
+
+
+#Input State List
+StateList <- c("CA", "NM",  "TX", "UT", "WY")
+# StateList <- c("UT", "NM", "TX")
 
 
 #State Color Palette for Maps

@@ -38,7 +38,7 @@ ui <- dashboardPage(
             <div class='col-md-9'>
               <h1 style='text-align:center'; class='parallax'> WSWC Aggregate Water Use Map </h1>
               <p style='text-align:center'; class='parallax_description'>A web tool used to summarize aggregated annual water use for a given area across the Western United States.</p>
-              <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: This tool is under construction, not for public use, and has not yet been approved by our member states.</p>
+              <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: This tool is under construction, not for public use, and has not yet been fully approved by our member states.</p>
             </div>
           </body>
         </html>
@@ -51,8 +51,12 @@ ui <- dashboardPage(
                    <h4 style='text-align:center'; class='parallax'> Instructions </h4>
                    <p style='text-align:left'; class='parallax_description'>Select desired reporting year from dropdown. Use tabs to select area type. Click on polygon for more info below.</p>
                  "),
+          actionButton(inputId="reset_input", label="Reset Inputs"),
           selectInput(inputId = 'ReportYearInput', label = 'Report Year', 
-                      choices = AllReportYearList, selected = 2005)
+                      choices = AllReportYearList, selected = 2005),
+          pickerInput(inputId = 'StateInput', label = 'Select Visible State', 
+                      choices = StateList, selected = StateList,
+                      multiple = TRUE),
       )
     ), #endfluidRow
     

@@ -5,9 +5,9 @@ account: waterdataexchangewswc
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2571881
-bundleId: 3539778
+bundleId: 3689397
 url: https://waterdataexchangewswc.shinyapps.io/MapPODSite_CRBver2/
-when: 1597963722.30667
+when: 1601504258.14016
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: gomap.js|google-analytics.html|Notes on Project.txt|README.md|styles.css|bonus code|NotEssentialData
+ignoredFiles: gomap.js|google-analytics.html|Notes on Project.txt|README.md|bonus code|NotEssentialData

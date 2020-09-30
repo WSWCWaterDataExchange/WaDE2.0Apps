@@ -35,7 +35,7 @@ ui <- dashboardPage(
             <div class='col-md-9'>
               <h1 style='text-align:center'; class='parallax'> WSWC POD Water Allocation Map </h1>
               <p style='text-align:center'; class='parallax_description'>A web tool used to located point of diversion sites for water rights across the Western United States.</p>
-              <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: This tool is under construction, not for public use, and has not yet been approved by our member states.</p>
+              <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: This tool is under construction, not for public use, and has not yet been fully approved by our member states.</p>
             </div>
           </body>
         </html>
@@ -55,11 +55,20 @@ ui <- dashboardPage(
              box(width = NULL, status="primary", title = "Inputs",
                  actionButton(inputId="reset_input", label="Reset Inputs"),
                  
+                 selectInput(inputId="MapDeckBGInput",label="Background Layer", 
+                             choices=MapDeckStyleList, selected="dark"),
+                 
+                 
+                 pickerInput(inputId='LegendTypeInput', label='Legend Type Color', 
+                             choices=LegendTypeList, selected='Beneficial Use', 
+                             multiple = FALSE),
+                 
+                 
                  helpText("-------------", align = "center"),
                  pickerInput(inputId='SiteTypeInput', label='Site Type', 
                              choices=SiteTypeList, selected=SiteTypeList,
                              multiple = TRUE),
-                 pickerInput(inputId='WaterSourceTypeInput', label='Watersource Type', 
+                 pickerInput(inputId='WaterSourceTypeInput', label='Water Source Type', 
                              choices=WaterSourceTypeList, selected=WaterSourceTypeList,
                              multiple = TRUE),
                  pickerInput(inputId='AllocationOwnerInput', label='Allocation Owner', 
@@ -82,14 +91,20 @@ ui <- dashboardPage(
                  pickerInput(inputId = "BenUseInput", label = "Primary Benificial Use", 
                              choices = BenUseList, selected = BenUseList,
                              multiple = TRUE),
+                 
+                 
                  helpText("-------------", align = "center"),
                  helpText("Allocation Flow", align = "center"),
+                 materialSwitch(inputId = "Null_CFS", label = "Include Empty Values (Null)?", 
+                                value = FALSE, status = "primary"),
                  numericInput(inputId = "minAA_CFS", label = "Minimum CFS", value = 0,
                               min = 0, max = max(P_AlloLFSite$AA_CFS), step = NA, width = NULL),
                  numericInput(inputId = "maxAA_CFS", label = "Maximum CFS", value = max(P_AlloLFSite$AA_CFS),
                               min = 0, max = max(P_AlloLFSite$AA_CFS), step = NA, width = NULL),
                  helpText("-------------", align = "center"),
                  helpText("Allocation Volume", align = "center"),
+                 materialSwitch(inputId = "Null_AF", label = "Include Empty Values (Null)?", 
+                                value = FALSE, status = "primary"),
                  numericInput(inputId = "minAA_AF", label = "Minimum AF", value = 0,
                               min = 0, max = max(P_AlloLFSite$AA_AF), step = NA, width = NULL),
                  numericInput(inputId = "maxAA_AF", label = "Maximum AF", value = max(P_AlloLFSite$AA_AF),
@@ -105,7 +120,7 @@ ui <- dashboardPage(
                    
                    #All Sites Map
                    tabPanel(title = "All Sites",
-                            withSpinner(mapdeckOutput(outputId = "mapAll", height = 600)),
+                            withSpinner(mapdeckOutput(outputId = "mapAll", height = 800)),
                             HTML("
                       <h4 style='text-align:center'; class='parallax'> 
                         <br>

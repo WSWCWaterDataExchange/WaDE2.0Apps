@@ -35,12 +35,11 @@ library(hash) #for creating dictionaries
 
 # MapDeck() Style and Token Acesses.
 access_token <- "pk.eyJ1IjoicmphbWVzd3N3YyIsImEiOiJjazllcndyb20wNDFpM2huYWRhdmpieW1vIn0.N9V48xEQF4EBsLgQ7j5SGA"
-style_url <- "mapbox://styles/mapbox/dark-v9"
 
 # Input Data
 P_AlloLFSite  <- import("data/P_AllowLJSite.RData") # Use this with filters to reduce amount of sites
 P_SiteLFAllo  <- import("data/P_SiteLJAllow.RData") # All sites
-P_SiteLFAllo_Basins  <- import("data/P_SiteLFAllo_Basin.RData") # River Basin Sites
+P_SiteLFAllo_Basins  <- import("data/P_SiteLJAllow_Basin.RData") # River Basin Sites
 BasinsSF <- sf::st_read("data/BasinsSF.shp") # Colorado River Basin Shapefile
 
 
@@ -48,28 +47,36 @@ BasinsSF <- sf::st_read("data/BasinsSF.shp") # Colorado River Basin Shapefile
 ################################################################################################
 # Sec 3. Custom Lists
 
-BenUseList <- c("Agricultural",
-                "Aquaculture",
-                "Commercial",
-                "Domestic",
-                "Environmental",
-                "Fire",
-                "Fish",
-                "Flood Control",
-                "Heating and Cooling",
-                "Industrial",
-                "Instream Flow",
-                "Livestock",
-                "Mining",
-                "Municipal",
-                "Other",
-                "Power",
-                "Recharge",
-                "Recreation",
-                "Snow Making",
-                "Storage",
-                "Unknown",
-                "Wildlife")
+LegendTypeList <- c(
+  "Beneficial Use",
+  "Site Type",
+  "Water Source Type",
+  "Owner"
+)
+
+BenUseList <- c(
+  "Agricultural",
+  "Aquaculture",
+  "Commercial",
+  "Domestic",
+  "Environmental",
+  "Fire",
+  "Fish",
+  "Flood Control",
+  "Heating and Cooling",
+  "Industrial",
+  "Instream Flow",
+  "Livestock",
+  "Mining",
+  "Municipal",
+  "Other",
+  "Power",
+  "Recharge",
+  "Recreation",
+  "Snow Making",
+  "Storage",
+  "Unknown",
+  "Wildlife")
 
 #BenUse & Color Dict
 BenUseColorDict <- hash() #creaqte blank dict
@@ -96,7 +103,7 @@ BenUseColorDict[["Storage"]] <- "#F5DEB3FF"
 BenUseColorDict[["Unknown"]] <- "#D3D3D3FF"
 BenUseColorDict[["Wildlife"]] <- "#FF0000FF"
 
-StateList <- c("CA", "CO", "ID", "ND", "NM",
+StateList <- c("CA", "CO", "ID", "ND", "NE", "NM", "NV",
                "OK", "OR", "TX", "UT", "WA")
 
 RiverBasinList <- c("Colorado River Basin", "Rio Grande River Basin", "Columbia River Basin")
@@ -144,9 +151,73 @@ WaterSourceTypeList <- c(
   "Unknown")
 
 AllocationOwnerList <- c(
+  "Other",
+  "United States of America",
+  "US Army",
   "US Bureau of Land Management",
-  "US Forest Service",
-  "Other")
+  "US Bureau Reclamation",
+  "US Department of Energy",
+  "US Forest Service")
+
+
+#SiteType & Color Dict
+SiteTypeColorDict <- hash() #creaqte blank dict
+SiteTypeColorDict[["Abandoned"]] <- "#FFC0CBFF"
+SiteTypeColorDict[["Aquifer"]] <- "#FF1493FF"
+SiteTypeColorDict[["Canal / Ditch / Stream"]] <- "#191970FF"
+SiteTypeColorDict[["Discharge Point"]] <- "#EE82EEFF"
+SiteTypeColorDict[["Diversion Point"]] <- "#BA55D3FF"
+SiteTypeColorDict[["Drain"]] <- "#8A2BE2FF"
+SiteTypeColorDict[["Effluent"]] <- "#800080FF"
+SiteTypeColorDict[["Exchange Plan"]] <- "#483D8BFF"
+SiteTypeColorDict[["Gravity"]] <- "#4B0082FF"
+SiteTypeColorDict[["Groundwater"]] <- "#FFA07AFF"
+SiteTypeColorDict[["Lake"]] <- "#F08080FF"
+SiteTypeColorDict[["Mine"]] <- "#FF0000FF"
+SiteTypeColorDict[["Minimum Flow"]] <- "#FFA500FF"
+SiteTypeColorDict[["Monitoring Well"]] <- "#FF6347FF"
+SiteTypeColorDict[["Other"]] <- "#FFFF00FF"
+SiteTypeColorDict[["Pipeline"]] <- "#FAFAD2FF"
+SiteTypeColorDict[["Point of Rediversion"]] <- "#EEE8AAFF"
+SiteTypeColorDict[["Point of Return"]] <- "#ADFF2FFF"
+SiteTypeColorDict[["Power Plant"]] <- "#32CD32FF"
+SiteTypeColorDict[["Pump"]] <- "#00FF7FFF"
+SiteTypeColorDict[["Reach"]] <- "#228B22FF"
+SiteTypeColorDict[["Recharge Area"]] <- "#9ACD32FF"
+SiteTypeColorDict[["Reservoir"]] <- "#800000FF"
+SiteTypeColorDict[["Seep"]] <- "#20B2AAFF"
+SiteTypeColorDict[["Spring"]] <- "#00FFFFFF"
+SiteTypeColorDict[["Storage"]] <- "#AFEEEEFF"
+SiteTypeColorDict[["Sump"]] <- "#48D1CCFF"
+SiteTypeColorDict[["Surface & Groundwater"]] <- "#808000FF"
+SiteTypeColorDict[["Surface Water"]] <- "#4682B4FF"
+SiteTypeColorDict[["Unknown"]] <- "#D3D3D3FF"
+SiteTypeColorDict[["Well"]] <- "#6495EDFF"
+SiteTypeColorDict[["winter runoff"]] <- "#1E90FFFF"
+
+#WaterSourceType & Color Dict
+WaterSourceColorDict <- hash() #creaqte blank dict
+WaterSourceColorDict[["Groundwater"]] <- "#008000FF"
+WaterSourceColorDict[["Other"]] <- "#FFA500FF"
+WaterSourceColorDict[["Reservoir / Storage"]] <- "#FFFF00FF"
+WaterSourceColorDict[["Surface & Groundwater"]] <- "#800080FF"
+WaterSourceColorDict[["Surface Water"]] <- "#FF4500FF"
+WaterSourceColorDict[["Unknown"]] <- "#0000FFFF"
+
+#Owner & Color Dict
+OwnerColorDict <- hash() #creaqte blank dict
+OwnerColorDict[["Other"]] <- "#D3D3D3FF"
+OwnerColorDict[["United States of America"]] <- "#0000FFFF"
+OwnerColorDict[["US Army"]] <- "#FF4500FF"
+OwnerColorDict[["US Bureau of Land Management"]] <- "#800080FF"
+OwnerColorDict[["US Bureau Reclamation"]] <- "#FFFF00FF"
+OwnerColorDict[["US Department of Energy"]] <- "#FFA500FF"
+OwnerColorDict[["US Forest Service"]] <- "#006400FF"
+
+
+#Owner Background Style
+MapDeckStyleList <- c("dark", "light", "outdoors", "streets", "satellite", "satellite-streets")
+
 
 emptytable <- data.frame(Date=as.Date(character()),
                          File=character(), 

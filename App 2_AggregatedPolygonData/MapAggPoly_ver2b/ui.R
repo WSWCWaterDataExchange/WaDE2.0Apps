@@ -38,7 +38,7 @@ ui <- dashboardPage(
             <div class='col-md-9'>
               <h1 style='text-align:center'; class='parallax'> WSWC Aggregate Water Use Map </h1>
               <p style='text-align:center'; class='parallax_description'>A web tool used to summarize aggregated annual water use for a given area across the Western United States.</p>
-              <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: This tool is under construction, not for public use, and has not yet been approved by our member states.</p>
+              <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: This tool is under construction, not for public use, and has not yet been fully approved by our member states.</p>
             </div>
           </body>
         </html>

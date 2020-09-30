@@ -22,6 +22,12 @@ server <- function(input, output, session) {
   ####### Standalone Observe Functions ########
   
   
+  #Reset Button - resest all inputs to starting values
+  observeEvent(input$reset_input, {
+    updatePickerInput(session, "StateInput", selected = StateList)
+  })
+  
+  
   #Change Report Year Slider to Default Value depending on tab
   observe({
     
@@ -233,14 +239,15 @@ server <- function(input, output, session) {
     data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
       filter(
         VariableCV %in% c("Consumptive use", "Consumptive Use"),
-        ReportYearCV %in% input$ReportYearInput
-      ) %>%
+        ReportYearCV %in% input$ReportYearInput,
+        State %in% input$StateInput
+        ) %>%
       group_by(ReportingUnitID, ReportYearCV, VariableCV) %>%
       summarise(Amount = sum(Amount))
     
     #Merge SpatialPolygonsDataFrame with dataframe
-    myNewCountySF <- merge(CountySF, data)
-    
+    myNewCountySF <- merge(CountySF, data, by="ReportingUnitID")
+
     #Map & Legend Color Palette
     pal <- colorNumeric(
       palette = "Blues", 
@@ -330,7 +337,8 @@ server <- function(input, output, session) {
     data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
       filter(
         VariableCV %in% c("Consumptive use", "Consumptive Use"),
-        ReportYearCV %in% input$ReportYearInput
+        ReportYearCV %in% input$ReportYearInput,
+        State %in% input$StateInput
       ) %>%
       group_by(ReportingUnitID, ReportYearCV, VariableCV) %>%
       summarise(Amount = sum(Amount))
@@ -422,7 +430,8 @@ server <- function(input, output, session) {
     data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
       filter(
         VariableCV %in% c("Consumptive use", "Consumptive Use"),
-        ReportYearCV %in% input$ReportYearInput
+        ReportYearCV %in% input$ReportYearInput,
+        State %in% input$StateInput
       ) %>%
       group_by(ReportingUnitID, ReportYearCV, VariableCV) %>%
       summarise(Amount = sum(Amount))
@@ -519,7 +528,8 @@ server <- function(input, output, session) {
     data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
       filter(
         VariableCV %in% c("Consumptive use", "Consumptive Use"),
-        ReportYearCV %in% input$ReportYearInput
+        ReportYearCV %in% input$ReportYearInput,
+        State %in% input$StateInput
       ) %>%
       group_by(ReportingUnitID, ReportYearCV, VariableCV) %>%
       summarise(Amount = sum(Amount))

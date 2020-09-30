@@ -25,8 +25,39 @@ server <- function(input, output, session) {
     updatePickerInput(session, "SiteTypeInput", selected = SiteTypeList)
     updatePickerInput(session, "WaterSourceTypeInput", selected = WaterSourceTypeList)
     updatePickerInput(session, "AllocationOwnerInput", selected = AllocationOwnerList)
+    updatePickerInput(session, "RiverBasin", selected = RiverBasinList)
+    updateMaterialSwitch(session, "Null_CFS", value = FALSE)
+    updateMaterialSwitch(session, "Null_AF", value = FALSE)
+    
+    #Reset Zoom mapAll
+    mapdeck_update(map_id = 'mapAll') %>%
+      mapdeck_view(
+        location = c(-100.9349, 40.27901),
+        zoom = 3.5)
+    
+    #Reset Zoom mapBasins
+    mapdeck_update(map_id = 'mapBasins') %>%
+      mapdeck_view(
+        location = c(-100.9349, 40.27901),
+        zoom = 3.5)
+    
   })
   
+  observeEvent(input$Null_CFS, {
+    if (input$Null_CFS == TRUE) {
+      updateNumericInput(session, "minAA_CFS", value = -999)
+    } else {
+      updateNumericInput(session, "minAA_CFS", value = 0)
+    }
+  })
+  
+  observeEvent(input$Null_AF, {
+    if (input$Null_AF == TRUE) {
+      updateNumericInput(session, "minAA_AF", value = -999)
+    } else {
+      updateNumericInput(session, "minAA_AF", value = 0)
+    }
+  })
 
 
   ##################################################################
@@ -89,26 +120,162 @@ server <- function(input, output, session) {
   
   
   
+
+  ##################################################################
+  ######## Create mapAll ########
+  
+  ##Base Map Creation
+  output$mapAll <- renderMapdeck({
+    mapdeck(
+      token = access_token,
+      style = mapdeck_style("dark"),
+      location = c(-100.9349, 40.27901),
+      zoom = 3.5,
+      show_view_state = FALSE,
+      repeat_view = FALSE)
+  })
+  
+  ##Incremental Changes to the Map
+  observe({
+    req(input$tab_being_displayed == "All Sites")
+
+    if (input$LegendTypeInput == "Beneficial Use") {
+      LegendColList <- input$BenUseInput
+      LegendColorDict <- values(BenUseColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Primary Beneficial Use"
+      tempsite <- filter_MapSite_All()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_All()$WBenUseColor
+    }
+    
+    if (input$LegendTypeInput == "Site Type") {
+      LegendColList <- input$SiteTypeInput
+      LegendColorDict <- values(SiteTypeColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Site Type"
+      tempsite <- filter_MapSite_All()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_All()$SiteTypeColor
+      }
+    if (input$LegendTypeInput == "Water Source Type") {
+      LegendColList <- input$WaterSourceTypeInput
+      LegendColorDict <- values(WaterSourceColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Water Source Type"
+      tempsite <- filter_MapSite_All()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_All()$WaterSourceTypeColor
+      }
+    if (input$LegendTypeInput == "Owner") {
+      LegendColList <- input$AllocationOwnerInput
+      LegendColorDict <- values(OwnerColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Owner"
+      tempsite <- filter_MapSite_All()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_All()$OwnerColor
+      }
+    
+    #Custom Site Category Legend
+    l1 <- legend_element(
+      variables = LegendColList,
+      colours = LegendColorDict,
+      colour_type = "fill", 
+      variable_type = "category",
+      title = LegendTitle,
+      css = "max-height: 500px; 
+             background-color: white;
+             border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
+    js <- mapdeck_legend(l1)
+    
+
+    mapdeck_update(map_id = 'mapAll', session = session) %>%
+      update_style(style = mapdeck_style(input$MapDeckBGInput)) %>%
+      add_scatterplot(
+        data = tempsite,
+        id = "SiteUUID",
+        lat = "Lat",
+        lon = "Long",
+        stroke_colour = "#FFFFFFFF",
+        fill_colour = "SiteColor",
+        radius = 10,
+        radius_min_pixels = 1.1,
+        radius_max_pixels = 10,
+        tooltip = "SiteUUID",
+        auto_highlight = TRUE,
+        update_view = FALSE,
+        legend = js
+      )
+    
+    
+  })
+  
+  ######## End Create mapAll ########
+  ##################################################################
+  
+  
+  
   ##################################################################
   ######## Create mapBasins ########
   
-  #Base Map Creation
+  
+  ##Base Map Creation
   output$mapBasins <- renderMapdeck({
     mapdeck(
       token = access_token,
-      style = style_url,
+      style = mapdeck_style("dark"),
       location = c(-100.9349, 40.27901),
-      zoom = 3.5)
+      zoom = 3.5,
+      show_view_state = FALSE,
+      repeat_view = FALSE)
   })
-  
-  # Incremental Changes to the Map
+
+  ##Incremental Changes to the Map
   observe({
     req(input$tab_being_displayed == "River Basins")
     
-    #Create row index on the fl using seq.int() function.
-    #For map click reaction.
-    tempsite <- filter_MapSite_Basins()
-    tempsite$SID <- seq.int(nrow(tempsite))
+    if (input$LegendTypeInput == "Beneficial Use") {
+      LegendColList <- input$BenUseInput
+      LegendColorDict <- values(BenUseColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Primary Beneficial Use"
+      tempsite <- filter_MapSite_Basins()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_Basins()$WBenUseColor
+    }
+    
+    if (input$LegendTypeInput == "Site Type") {
+      LegendColList <- input$SiteTypeInput
+      LegendColorDict <- values(SiteTypeColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Site Type"
+      tempsite <- filter_MapSite_Basins()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_Basins()$SiteTypeColor
+    }
+    if (input$LegendTypeInput == "Water Source Type") {
+      LegendColList <- input$WaterSourceTypeInput
+      LegendColorDict <- values(WaterSourceColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Water Source Type"
+      tempsite <- filter_MapSite_Basins()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_Basins()$WaterSourceTypeColor
+    }
+    if (input$LegendTypeInput == "Owner") {
+      LegendColList <- input$AllocationOwnerInput
+      LegendColorDict <- values(OwnerColorDict[LegendColList], USE.NAMES=FALSE)
+      LegendTitle = "Owner"
+      tempsite <- filter_MapSite_Basins()
+      tempsite$SID <- seq.int(nrow(tempsite))
+      tempsite$SiteColor <- filter_MapSite_Basins()$OwnerColor
+    }
+    
+    #Custom Site Category Legend
+    l1 <- legend_element(
+      variables = LegendColList,
+      colours = LegendColorDict,
+      colour_type = "fill", 
+      variable_type = "category",
+      title = LegendTitle,
+      css = "max-height: 500px; 
+             background-color: white;
+             border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
+    js <- mapdeck_legend(l1)
     
     #Custom Polygon Category Legend
     lePolygon <- legend_element(
@@ -122,23 +289,9 @@ server <- function(input, output, session) {
              border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
     lePolygon_js <- mapdeck_legend(lePolygon)
     
-    #Custom Site Category Legend
-    leSites <- legend_element(
-      variables = c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire", "Flood Control",
-                    "Industrial", "Livestock", "Mining", "Municipal", "Power", "Recharge", 
-                    "Recreation", "Snow Making", "Storage", "Wildlife", "State Specific"), 
-      colours = c("#006400FF", "#FFFF00FF", "#0000FFFF", "#32CD32FF", "#FF0000FF", "#00FFFFFF",
-                  "#800080FF", "#FFD700FF", "#A52A2AFF", "#4B0082FF", "#FFA500FF", "#D2691EFF", 
-                  "#FFC0CBFF", "#F0FFF0FF", "#F5DEB3FF", "#ADFF2FFF", "#808080FF"),  
-      colour_type = "fill", 
-      variable_type = "category",
-      title = "Primary Beneficial Use",
-      css = "max-height: 500px; 
-             background-color: white;
-             border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
-    leSites_js <- mapdeck_legend(leSites)
     
-    mapdeck_update(map_id = "mapBasins") %>%
+    mapdeck_update(map_id = 'mapBasins', session = session) %>%
+      update_style(style = mapdeck_style(input$MapDeckBGInput)) %>%
       add_polygon(
         data = filter_BasinsSF(),
         stroke_colour = "#000000FF",
@@ -154,67 +307,11 @@ server <- function(input, output, session) {
         id = "SiteUUID",
         lat = "Lat",
         lon = "Long",
-        fill_colour = "WBenUseColor",
-        radius = 1000,
-        tooltip = "SiteUUID",
-        auto_highlight = TRUE,
-        update_view = FALSE,
-        legend = leSites_js
-      )
-  })
-  
-  ######## End Create mapBasins ########
-  ##################################################################
-  
-
-  ##################################################################
-  ######## Create mapAll ########
-  
-  ##Base Map Creation
-  output$mapAll <- renderMapdeck({
-    mapdeck(
-      token = access_token,
-      style = style_url,
-      location = c(-100.9349, 40.27901),
-      zoom = 3.5)
-  })
-  
-  ##Incremental Changes to the Map
-  observe({
-    req(input$tab_being_displayed == "All Sites")
-    
-    ##Create row index on the fl using seq.int() function.
-    #For map click reaction.
-    tempsite <- filter_MapSite_All()
-    tempsite$SID <- seq.int(nrow(tempsite))
-    
-    ##Custom Category Legend
-    #Create Use and Color list based in User Inputs and dictionary.
-    BenUseDictList <- input$BenUseInput
-    BenUseColDictList <- values(BenUseColorDict[BenUseDictList], USE.NAMES=FALSE)
-    
-    l1 <- legend_element(
-      variables = BenUseDictList,
-      colours = BenUseColDictList,
-      colour_type = "fill", 
-      variable_type = "category",
-      title = "Primary Beneficial Use",
-      css = "max-height: 500px; 
-             background-color: white;
-             border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
-    
-    js <- mapdeck_legend(l1)
-    
-    mapdeck_update(map_id = 'mapAll') %>%
-      add_scatterplot(
-        data = tempsite,
-        id = "SiteUUID",
-        lat = "Lat",
-        lon = "Long",
         stroke_colour = "#FFFFFFFF",
-        stroke_width = 200,
-        fill_colour = "WBenUseColor",
-        radius = 2000,
+        fill_colour = "SiteColor",
+        radius = 10,
+        radius_min_pixels = 1.1,
+        radius_max_pixels = 10,
         tooltip = "SiteUUID",
         auto_highlight = TRUE,
         update_view = FALSE,
@@ -222,7 +319,84 @@ server <- function(input, output, session) {
       )
   })
   
-  ######## End Create mapAll ########
+  
+  
+  
+  
+  
+  
+  # #Base Map Creation
+  # output$mapBasins <- renderMapdeck({
+  #   mapdeck(
+  #     token = access_token,
+  #     style = style_url,
+  #     location = c(-100.9349, 40.27901),
+  #     zoom = 3.5)
+  # })
+  # 
+  # # Incremental Changes to the Map
+  # observe({
+  #   req(input$tab_being_displayed == "River Basins")
+  #   
+  #   #Create row index on the fl using seq.int() function.
+  #   #For map click reaction.
+  #   tempsite <- filter_MapSite_Basins()
+  #   tempsite$SID <- seq.int(nrow(tempsite))
+  #   
+  #   #Custom Polygon Category Legend
+  #   lePolygon <- legend_element(
+  #     variables = c("Rio Grande Basin", "Colorado River Basin", "Columbia Basin"),
+  #     colours = c("#FFFF00FF", "#800080FF", "#3CB371FF"),
+  #     colour_type = "fill",
+  #     variable_type = "category",
+  #     title = "River Basin",
+  #     css = "max-height: 500px;
+  #            background-color: white;
+  #            border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
+  #   lePolygon_js <- mapdeck_legend(lePolygon)
+  #   
+  #   #Custom Site Category Legend
+  #   leSites <- legend_element(
+  #     variables = c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire", "Flood Control",
+  #                   "Industrial", "Livestock", "Mining", "Municipal", "Power", "Recharge", 
+  #                   "Recreation", "Snow Making", "Storage", "Wildlife", "State Specific"), 
+  #     colours = c("#006400FF", "#FFFF00FF", "#0000FFFF", "#32CD32FF", "#FF0000FF", "#00FFFFFF",
+  #                 "#800080FF", "#FFD700FF", "#A52A2AFF", "#4B0082FF", "#FFA500FF", "#D2691EFF", 
+  #                 "#FFC0CBFF", "#F0FFF0FF", "#F5DEB3FF", "#ADFF2FFF", "#808080FF"),  
+  #     colour_type = "fill", 
+  #     variable_type = "category",
+  #     title = "Primary Beneficial Use",
+  #     css = "max-height: 500px; 
+  #            background-color: white;
+  #            border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
+  #   leSites_js <- mapdeck_legend(leSites)
+  #   
+  #   mapdeck_update(map_id = "mapBasins") %>%
+  #     add_polygon(
+  #       data = filter_BasinsSF(),
+  #       stroke_colour = "#000000FF",
+  #       stroke_width = 1000,
+  #       fill_colour = "BasinName",
+  #       fill_opacity = (255/2),
+  #       auto_highlight = FALSE,
+  #       update_view = FALSE,
+  #       legend = lePolygon_js
+  #     ) %>%
+  #     add_scatterplot(
+  #       data = tempsite,
+  #       id = "SiteUUID",
+  #       lat = "Lat",
+  #       lon = "Long",
+  #       fill_colour = "WBenUseColor",
+  #       radius = 1000,
+  #       tooltip = "SiteUUID",
+  #       auto_highlight = TRUE,
+  #       update_view = FALSE,
+  #       legend = leSites_js
+  #     )
+  # })
+  
+  ######## End Create mapBasins ########
   ##################################################################
   
   

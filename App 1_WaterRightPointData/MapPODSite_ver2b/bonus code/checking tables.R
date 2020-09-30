@@ -26,10 +26,10 @@ access_token <- "pk.eyJ1IjoicmphbWVzd3N3YyIsImEiOiJjazllcndyb20wNDFpM2huYWRhdmpi
 style_url <- "mapbox://styles/rjameswswc/ckb71bkpc4e2j1jnwo3zy5nrx"
 
 # Input Data
-P_AlloLFSite  <- import("data/P_AlloLFSite.RData") # Use this with filters to reduce amount of sites
-P_SiteLFAllo  <- import("data/P_SiteLFAllo.RData") # All sites
-P_SiteLFAllo_CRB  <- import("data/P_SiteLFAllo_CRB.RData") # CRB Only Sites
-CRBasinSF <- sf::st_read("data/CRBasin.shp") # CRB Shapefile
+P_AlloLFSite  <- import("data/P_AllowLJSite.RData") # Use this with filters to reduce amount of sites
+P_SiteLFAllo  <- import("data/P_SiteLJAllow.RData") # All sites
+P_SiteLFAllo_Basins  <- import("data/P_SiteLFAllo_Basin.RData") # River Basin Sites
+BasinsSF <- sf::st_read("data/BasinsSF.shp") # Colorado River Basin Shapefile
 
 
 ################################################################################################
@@ -42,6 +42,23 @@ BenUseList <- c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire
 
 StateList <- c("CA", "CO", "ID", "ND", "NM",
                "OK", "OR", "TX", "UT", "WA")
+
+
+##################
+#creating new dataframe
+
+#Filter Site Map All - reduce All site map down based on user inputs from Allow Table
+filter_MapSite_All <- P_SiteLFAllo %>% filter()
+
+
+tempsite <- data.frame(matrix(ncol=5, nrow = nrow(filter_MapSite_All() )))
+colnames(tempsite) <- c("SiteUUID", "Lat", "Long", "SiteColor", "SID")
+tempsite$SiteUUID <- filter_MapSite_All()$SiteUUID
+tempsite$Lat <- filter_MapSite_All()$Lat
+tempsite$Long <- filter_MapSite_All()$Long
+tempsite$SiteColor <- filter_MapSite_All()$WBenUseColor
+tempsite$SID <- seq.int(nrow(temp))
+
 
 ################################################################################################
 ################################################################################################
