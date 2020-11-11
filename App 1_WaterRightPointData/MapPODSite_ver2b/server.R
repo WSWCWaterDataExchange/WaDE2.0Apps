@@ -1,4 +1,4 @@
-# App: MapPODSite_ver2b
+# App: App1_WaterRightPointData_v2b
 
 ################################################################################################
 ################################################################################################
@@ -33,7 +33,7 @@ server <- function(input, output, session) {
     mapdeck_update(map_id = 'mapAll') %>%
       mapdeck_view(
         location = c(-100.9349, 40.27901),
-        zoom = 3.5)
+        zoom = 4.0)
     
     #Reset Zoom mapBasins
     mapdeck_update(map_id = 'mapBasins') %>%
@@ -89,7 +89,7 @@ server <- function(input, output, session) {
   filter_MapSite_Basins <- reactive({
     P_SiteLFAllo_Basins %>%
       filter(
-        (Basin %in% input$RiverBasin),
+        (BasinName %in% input$RiverBasin),
         (WBenUse %in% input$BenUseInput),
         (SiteUUID %in% filter_TableAllo()$SiteUUID)
       )
@@ -114,6 +114,15 @@ server <- function(input, output, session) {
       )
   })
   
+  
+  #Filter StateLines Polygon Shapefile
+  filter_StateLinesSF <- reactive({
+    USStateLinesSF %>%
+      filter(
+      )
+  })
+  
+  
 
   ####### End Reactive Data Sets ########
   ##################################################################
@@ -130,7 +139,7 @@ server <- function(input, output, session) {
       token = access_token,
       style = mapdeck_style("dark"),
       location = c(-100.9349, 40.27901),
-      zoom = 3.5,
+      zoom = 4.0,
       show_view_state = FALSE,
       repeat_view = FALSE)
   })
@@ -185,9 +194,19 @@ server <- function(input, output, session) {
              border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
     js <- mapdeck_legend(l1)
     
-
     mapdeck_update(map_id = 'mapAll', session = session) %>%
       update_style(style = mapdeck_style(input$MapDeckBGInput)) %>%
+      
+      add_polygon(
+        data = filter_StateLinesSF(),
+        stroke_colour = "#000000FF",
+        stroke_width = 1000,
+        fill_colour = FALSE,
+        fill_opacity = (0/2),
+        auto_highlight = FALSE,
+        update_view = FALSE
+      ) %>%
+      
       add_scatterplot(
         data = tempsite,
         id = "SiteUUID",
@@ -195,16 +214,14 @@ server <- function(input, output, session) {
         lon = "Long",
         stroke_colour = "#FFFFFFFF",
         fill_colour = "SiteColor",
-        radius = 10,
-        radius_min_pixels = 1.1,
-        radius_max_pixels = 10,
+        radius = 15,
+        radius_min_pixels = 2,
+        radius_max_pixels = 15,
         tooltip = "SiteUUID",
         auto_highlight = TRUE,
         update_view = FALSE,
         legend = js
       )
-    
-    
   })
   
   ######## End Create mapAll ########
@@ -248,6 +265,7 @@ server <- function(input, output, session) {
       tempsite$SID <- seq.int(nrow(tempsite))
       tempsite$SiteColor <- filter_MapSite_Basins()$SiteTypeColor
     }
+    
     if (input$LegendTypeInput == "Water Source Type") {
       LegendColList <- input$WaterSourceTypeInput
       LegendColorDict <- values(WaterSourceColorDict[LegendColList], USE.NAMES=FALSE)
@@ -256,6 +274,7 @@ server <- function(input, output, session) {
       tempsite$SID <- seq.int(nrow(tempsite))
       tempsite$SiteColor <- filter_MapSite_Basins()$WaterSourceTypeColor
     }
+    
     if (input$LegendTypeInput == "Owner") {
       LegendColList <- input$AllocationOwnerInput
       LegendColorDict <- values(OwnerColorDict[LegendColList], USE.NAMES=FALSE)
@@ -279,8 +298,8 @@ server <- function(input, output, session) {
     
     #Custom Polygon Category Legend
     lePolygon <- legend_element(
-      variables = c("Rio Grande Basin", "Colorado River Basin", "Columbia Basin"),
-      colours = c("#FFFF00FF", "#800080FF", "#3CB371FF"),
+      variables = c("Rio Grande Basin", "Colorado River Basin", "Columbia Basin", "Bear River Basin"),
+      colours = c("#FFFF00FF", "#4682B4FF", "#3CB371FF", "#800080FF"),
       colour_type = "fill",
       variable_type = "category",
       title = "River Basin",
@@ -288,7 +307,6 @@ server <- function(input, output, session) {
              background-color: white;
              border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
     lePolygon_js <- mapdeck_legend(lePolygon)
-    
     
     mapdeck_update(map_id = 'mapBasins', session = session) %>%
       update_style(style = mapdeck_style(input$MapDeckBGInput)) %>%
@@ -309,9 +327,9 @@ server <- function(input, output, session) {
         lon = "Long",
         stroke_colour = "#FFFFFFFF",
         fill_colour = "SiteColor",
-        radius = 10,
-        radius_min_pixels = 1.1,
-        radius_max_pixels = 10,
+        radius = 15,
+        radius_min_pixels = 2,
+        radius_max_pixels = 15,
         tooltip = "SiteUUID",
         auto_highlight = TRUE,
         update_view = FALSE,
@@ -319,82 +337,6 @@ server <- function(input, output, session) {
       )
   })
   
-  
-  
-  
-  
-  
-  
-  # #Base Map Creation
-  # output$mapBasins <- renderMapdeck({
-  #   mapdeck(
-  #     token = access_token,
-  #     style = style_url,
-  #     location = c(-100.9349, 40.27901),
-  #     zoom = 3.5)
-  # })
-  # 
-  # # Incremental Changes to the Map
-  # observe({
-  #   req(input$tab_being_displayed == "River Basins")
-  #   
-  #   #Create row index on the fl using seq.int() function.
-  #   #For map click reaction.
-  #   tempsite <- filter_MapSite_Basins()
-  #   tempsite$SID <- seq.int(nrow(tempsite))
-  #   
-  #   #Custom Polygon Category Legend
-  #   lePolygon <- legend_element(
-  #     variables = c("Rio Grande Basin", "Colorado River Basin", "Columbia Basin"),
-  #     colours = c("#FFFF00FF", "#800080FF", "#3CB371FF"),
-  #     colour_type = "fill",
-  #     variable_type = "category",
-  #     title = "River Basin",
-  #     css = "max-height: 500px;
-  #            background-color: white;
-  #            border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
-  #   lePolygon_js <- mapdeck_legend(lePolygon)
-  #   
-  #   #Custom Site Category Legend
-  #   leSites <- legend_element(
-  #     variables = c("Agricultural", "Commercial", "Domestic", "Environmental", "Fire", "Flood Control",
-  #                   "Industrial", "Livestock", "Mining", "Municipal", "Power", "Recharge", 
-  #                   "Recreation", "Snow Making", "Storage", "Wildlife", "State Specific"), 
-  #     colours = c("#006400FF", "#FFFF00FF", "#0000FFFF", "#32CD32FF", "#FF0000FF", "#00FFFFFF",
-  #                 "#800080FF", "#FFD700FF", "#A52A2AFF", "#4B0082FF", "#FFA500FF", "#D2691EFF", 
-  #                 "#FFC0CBFF", "#F0FFF0FF", "#F5DEB3FF", "#ADFF2FFF", "#808080FF"),  
-  #     colour_type = "fill", 
-  #     variable_type = "category",
-  #     title = "Primary Beneficial Use",
-  #     css = "max-height: 500px; 
-  #            background-color: white;
-  #            border-style: solid; border-width: 2px; border-color: black; border-radius: 10px;")
-  #   leSites_js <- mapdeck_legend(leSites)
-  #   
-  #   mapdeck_update(map_id = "mapBasins") %>%
-  #     add_polygon(
-  #       data = filter_BasinsSF(),
-  #       stroke_colour = "#000000FF",
-  #       stroke_width = 1000,
-  #       fill_colour = "BasinName",
-  #       fill_opacity = (255/2),
-  #       auto_highlight = FALSE,
-  #       update_view = FALSE,
-  #       legend = lePolygon_js
-  #     ) %>%
-  #     add_scatterplot(
-  #       data = tempsite,
-  #       id = "SiteUUID",
-  #       lat = "Lat",
-  #       lon = "Long",
-  #       fill_colour = "WBenUseColor",
-  #       radius = 1000,
-  #       tooltip = "SiteUUID",
-  #       auto_highlight = TRUE,
-  #       update_view = FALSE,
-  #       legend = leSites_js
-  #     )
-  # })
   
   ######## End Create mapBasins ########
   ##################################################################

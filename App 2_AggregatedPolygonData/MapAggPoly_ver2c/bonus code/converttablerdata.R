@@ -5,20 +5,25 @@ library(readr)
 setwd("C:\\Users\\rjame\\Documents\\RShinyAppPractice\\App 2_AggregatedPolygonData\\MapAggPoly_ver2c\\data")
 
 #AggregatedAmountswOrg Info
-AAFwO <- read_csv("P_AggregatedAmountswOrg.csv")
-export(AAFwO, "AggAmountTablewO.RData")
+Pagg <- read_csv("Pagg_AggregatedAmountsAll.csv")
+export(Pagg, "Pagg.RData")
 
-#Variables Info
-V <- read_csv("Variables.csv")
-export(V, "VarTable.RData")
 
-#WaterSources Info
-WS <- read_csv("P_WaterSources.csv")
-export(WS, "PWaSoTable.RData")
 
-#Methods Info
-M <- read_csv("P_Methods.csv")
-export(M, "PMetTable.RData")
+
+
+
+# #Variables Info
+# V <- read_csv("Variables.csv")
+# export(V, "VarTable.RData")
+# 
+# #WaterSources Info
+# WS <- read_csv("P_WaterSources.csv")
+# export(WS, "PWaSoTable.RData")
+# 
+# #Methods Info
+# M <- read_csv("P_Methods.csv")
+# export(M, "PMetTable.RData")
 
 
 

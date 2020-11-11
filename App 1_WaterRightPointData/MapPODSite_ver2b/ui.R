@@ -1,4 +1,4 @@
-# App: MapPODSite_ver2b
+# App: App1_WaterRightPointData_v2b
 
 ################################################################################################
 ################################################################################################
@@ -15,8 +15,16 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
+    
+    setBackgroundColor(
+      # color = "#ccffff",
+      color = "#0F6B99",
+      shinydashboard = TRUE
+    ),
+    
     fluidRow(
-      HTML("
+      box(width = 12, height = 260, status="primary",
+          HTML("
         <html>
           <head>
             <meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -30,16 +38,19 @@ ui <- dashboardPage(
           </head>
           <body>
             <div class='col-md-2'>
-              <img src='wswclogo.jpg' alt='https://www.westernstateswater.org/' width='90' height='120' class='center'>
+              <img src='wswclogo.jpg' alt='https://www.westernstateswater.org/' width='160' height='220' class='center'>
             </div>
             <div class='col-md-9'>
-              <h1 style='text-align:center'; class='parallax'> WSWC POD Water Allocation Map </h1>
-              <p style='text-align:center'; class='parallax_description'>A web tool used to located point of diversion sites for water rights across the Western United States.</p>
-              <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: This tool is under construction, not for public use, and has not yet been fully approved by our member states.</p>
+              <h1 style='text-align:center'><b><u> WSWC POD Water Allocation Map </b></u></h1>
+              <p style='text-align:center'> A web tool used to summarize aggregated annual water use for a given area across the Western United States.</p>
+              <br>
+              <p style='color:red; text-align:center'> DISCLAIMER: This tool is under construction, not for public use, and has not yet been fully approved by our member states.</p>
+              <p style='color:red; text-aglgn:center'><b> WARNING: Individual states use separate methods to estimate water use.  As a result, water use data comparison across states lines is not necessarily exact.  Before drawing any conclusions or making comparison, consult the state's utilized method on water data creation. </b></p>
             </div>
           </body>
         </html>
         ")
+      )
     ),
     
     fluidRow(
@@ -54,6 +65,8 @@ ui <- dashboardPage(
              ),
              box(width = NULL, status="primary", title = "Inputs",
                  actionButton(inputId="reset_input", label="Reset Inputs"),
+                 
+                 # checkboxGroupInput(inputId="StateLines", label="State Lines", choices=TRUE),
                  
                  selectInput(inputId="MapDeckBGInput",label="Background Layer", 
                              choices=MapDeckStyleList, selected="dark"),
@@ -79,8 +92,8 @@ ui <- dashboardPage(
                  helpText("-------------", align = "center"),
                  sliderInput("DateInput", "Priority Date (yyyy-mm-dd)",
                              min = as.Date("1850-01-01","%Y-%m-%d"),
-                             max = as.Date("2016-09-09","%Y-%m-%d"),
-                             value = c(as.Date("1850-01-01","%Y-%m-%d"), as.Date("2016-09-09","%Y-%m-%d")),
+                             max = as.Date("2020-06-24","%Y-%m-%d"),
+                             value = c(as.Date("1850-01-01","%Y-%m-%d"), as.Date("2020-06-24","%Y-%m-%d")),
                              timeFormat="%Y-%m-%d"),
                  pickerInput(inputId = 'RiverBasin', label = 'River Basin', 
                              choices = RiverBasinList, selected = RiverBasinList,
@@ -96,7 +109,7 @@ ui <- dashboardPage(
                  helpText("-------------", align = "center"),
                  helpText("Allocation Flow", align = "center"),
                  materialSwitch(inputId = "Null_CFS", label = "Include Empty Values (Null)?", 
-                                value = FALSE, status = "primary"),
+                                value = TRUE, status = "primary"),
                  numericInput(inputId = "minAA_CFS", label = "Minimum CFS", value = 0,
                               min = 0, max = max(P_AlloLFSite$AA_CFS), step = NA, width = NULL),
                  numericInput(inputId = "maxAA_CFS", label = "Maximum CFS", value = max(P_AlloLFSite$AA_CFS),
@@ -104,7 +117,7 @@ ui <- dashboardPage(
                  helpText("-------------", align = "center"),
                  helpText("Allocation Volume", align = "center"),
                  materialSwitch(inputId = "Null_AF", label = "Include Empty Values (Null)?", 
-                                value = FALSE, status = "primary"),
+                                value = TRUE, status = "primary"),
                  numericInput(inputId = "minAA_AF", label = "Minimum AF", value = 0,
                               min = 0, max = max(P_AlloLFSite$AA_AF), step = NA, width = NULL),
                  numericInput(inputId = "maxAA_AF", label = "Maximum AF", value = max(P_AlloLFSite$AA_AF),
@@ -120,27 +133,25 @@ ui <- dashboardPage(
                    
                    #All Sites Map
                    tabPanel(title = "All Sites",
-                            withSpinner(mapdeckOutput(outputId = "mapAll", height = 800)),
-                            HTML("
-                      <h4 style='text-align:center'; class='parallax'> 
-                        <br>
-                        Point of Diversion Sites (click desired site on map for more info)
-                      </h4>
-                    "),
+                            withSpinner(mapdeckOutput(outputId = "mapAll", height = 800))
                    ), #endtabPanel
                    
                    #Basins Sites Map
                    tabPanel(title = "River Basins",
-                            withSpinner(mapdeckOutput(outputId = "mapBasins", height = 800)),
-                            HTML("
-                      <h4 style='text-align:center'; class='parallax'> 
-                        <br>
-                        Point of Diversion Sites (click desired site on map for more info)
-                      </h4>
-                    "),
+                            withSpinner(mapdeckOutput(outputId = "mapBasins", height = 800))
                    ) #endtabPanel
                  ) # endtabsetPanel
              ),
+             
+             fluidRow(
+               HTML("
+                 <h3 style='text-align:center'; class='parallax'> 
+                 <br>
+                 <b>
+                 WaDE Data Tables (click desired site on map)
+                 </b>
+                 </h3>
+               ")),
              
              #Organizations API Table
              box(

@@ -1,0 +1,13 @@
+name: App3_SiteSpecificAmounts_v1
+title: App3_SiteSpecificAmounts_v1
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2983190
+bundleId: 3722435
+url: https://waterdataexchangewswc.shinyapps.io/App3_SiteSpecificAmounts_v1/
+when: 1602283471.13192
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: bonus code/checking tables.R|bonus code/converttablerdata.R|bonus code/PreProcessData_SiteSpecific1a.ipynb|bonus code/.ipynb_checkpoints/PreProcessData_SiteSpecific1a-checkpoint.ipynb|NotEssentialData/EmptyData.csv|NotEssentialData/P_SiteLJSSA.csv|NotEssentialData/P_SSALJSite.csv

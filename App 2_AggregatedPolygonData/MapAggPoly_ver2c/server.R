@@ -1,4 +1,4 @@
-# App: MapAggPoly_ver2c
+# App: App2_Aggregated_v2c
 #Notes:
 # 1) Map Logic: Site -> AggAmountTable -> BenUseTable
 
@@ -25,6 +25,7 @@ server <- function(input, output, session) {
   #Reset Button - resest all inputs to starting values
   observeEvent(input$reset_input, {
     updatePickerInput(session, "StateInput", selected = StateList)
+    updatePickerInput(session, "BenUseInput", selected = BenUseList)
   })
   
   
@@ -43,24 +44,36 @@ server <- function(input, output, session) {
     #HUC8
     else if(input$tab_being_displayed == "HUC8") {
       ruLabel = 'HUC8 Report Year'
-      Year = 2009
+      Year = 2012
       YearList = c(2005, 2006, 2007, 2008, 2009,
-                   2010, 2011, 2012, 2013, 2014)
+                   2010, 2011, 2012, 2013, 2014,
+                   2015, 2016, 2017, 2018, 2019, 2020)
     }
     
     #Custom
     else if (input$tab_being_displayed == "Custom") {
       ruLabel = 'Custom Report Year'
       Year = 2012
-      YearList= c(2000,2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-                  2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016)
+      YearList= c(1985,
+                  1986, 1987, 1988, 1989, 1990, 1991,
+                  1992, 1993, 1994, 1995, 1996, 1997,
+                  1998, 1999, 2000, 2001, 2002, 2003,
+                  2004, 2005, 2006, 2007, 2008, 2009,
+                  2010, 2011, 2012, 2013, 2014, 2015,
+                  2016, 2017, 2018)
     }
     
     #USBR
     else if (input$tab_being_displayed == "USBR Upper Colorado River Basin Tributarys") {
       ruLabel = 'USBR Report Year'
       Year = 2009
-      YearList = AllReportYearList
+      YearList = c(1971,	1972,	1973,	1974,	1975,	1976,	1977,
+                   1978,	1979,	1980,	1981,	1982,	1983,	1984,
+                   1985,	1986,	1987,	1988,	1989,	1990,	1991,
+                   1992,	1993,	1994,	1995,	1996,	1997,	1998,
+                   1999,	2000,	2001,	2002,	2003,	2004,	2005,
+                   2006,	2007,	2008,	2009,	2010,	2011,	2012,
+                   2013,	2014,	2015,	2016,	2017,	2018)
     }
     
     #Default
@@ -84,8 +97,10 @@ server <- function(input, output, session) {
   ##################################################################
   ####### Reactive Data Sets ########
   
-  #For Empty Plots before Mouse Selection
-  emptydata <- reactive({NULL})
+  emptydataRec <- reactive({
+    EmptyTable
+  })
+  
   
   ####### End Reactive Data Sets ########
   ##################################################################
@@ -99,115 +114,249 @@ server <- function(input, output, session) {
     
     #county
     if (input$tab_being_displayed == "County") {
-      click <- input$CountyMap_shape_click$id
-      tempCountySF <- CountySF %>% subset(ReportingUnitUUID %in% click)
-      tempAggAmountTable <- AggAmountTable %>% filter(ReportingUnitID %in% tempCountySF$ReportingUnitID)
+      clickVal <- input$CountyMap_shape_click$id
+      tempCountySF <- CountySF %>% subset(ReportingUnitUUID %in% clickVal)
+      tempPAggTable <- PAggTable %>% filter(
+        (ReportingUnitID %in% tempCountySF$ReportingUnitID),
+        (BeneficialUseCV %in% input$BenUseInput)
+      )
     }
     
     #HUC8
     if (input$tab_being_displayed == "HUC8") {
-      click <- input$HUC8Map_shape_click$id
-      tempHUCSF <- HUCSF %>% subset(ReportingUnitUUID %in% click)
-      tempAggAmountTable <- AggAmountTable %>% filter(ReportingUnitID %in% tempHUCSF$ReportingUnitID)
+      clickVal <- input$HUC8Map_shape_click$id
+      tempHUCSF <- HUCSF %>% subset(ReportingUnitUUID %in% clickVal)
+      tempPAggTable <- PAggTable %>% filter(
+        (ReportingUnitID %in% tempHUCSF$ReportingUnitID),
+        (BeneficialUseCV %in% input$BenUseInput)
+      )
     }
     
     #Custom
     if (input$tab_being_displayed == "Custom") {
-      click <- input$CustomMap_shape_click$id
-      tempCustomSF <- CustomSF %>% subset(ReportingUnitUUID %in% click)
-      tempAggAmountTable <- AggAmountTable %>% filter(ReportingUnitID %in% tempCustomSF$ReportingUnitID)
+      clickVal <- input$CustomMap_shape_click$id
+      tempCustomSF <- CustomSF %>% subset(ReportingUnitUUID %in% clickVal)
+      tempPAggTable <- PAggTable %>% filter(
+        (ReportingUnitID %in% tempCustomSF$ReportingUnitID),
+        (BeneficialUseCV %in% input$BenUseInput)
+      )
     }
     
     #USBR_UCRB_Tributary
     if (input$tab_being_displayed == "USBR Upper Colorado River Basin Tributarys") {
-      click <- input$USBR_UCRB_TributaryMap_shape_click$id
-      tempUSBR_UCRB_TributarySF <- USBR_UCRB_TributarySF %>% subset(ReportingUnitUUID %in% click)
-      tempAggAmountTable <- AggAmountTable %>% filter(ReportingUnitID %in% tempUSBR_UCRB_TributarySF$ReportingUnitID)
+      clickVal <- input$USBR_UCRB_TributaryMap_shape_click$id
+      tempUSBR_UCRB_TributarySF <- USBR_UCRB_TributarySF %>% subset(ReportingUnitUUID %in% clickVal)
+      tempPAggTable <- PAggTable %>% filter(
+        (ReportingUnitID %in% tempUSBR_UCRB_TributarySF$ReportingUnitID),
+        (BeneficialUseCV %in% input$BenUseInput)
+      )
+    }
+    
+    #Clear when Reset Button is Clicked
+    if (input$reset_input == TRUE) {
+      clickVal <- NULL
     }
     
     
-    #Produce subset of data and Plot from info on click on map event
-    if(is.null(click)) {
+    #Produce subset of data and Plot from info on clickVal on map event
+    print(clickVal)
+    if(is.null(clickVal) == TRUE) {
       
       output$LP_A <- renderPlotly({
-        #Display Empty plot until mouse click selection
-        validate(
-          need(nrow(emptydata()) > 0, 'No selection. Please select a Reporting Unit')
-        )
-        plot_ly(emptydata(), x = ~ReportYearCV, y = ~SumAmouts)
-        
+        figLP_A <- plot_ly(emptydataRec(), type='scatter')
+        figLP_A <- figLP_A %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figLP_A
       })
       
       output$LP_B <- renderPlotly({
-        #Display Empty plot until mouse click selection
-        validate(
-          need(nrow(emptydata()) > 0, 'No selection. Please select a Reporting Unit')
-        )
-        plot_ly(emptydata(), x = ~ReportYearCV, y = ~SumAmouts)
+        figLP_B <- plot_ly(emptydataRec(), type='scatter')
+        figLP_B <- figLP_B %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figLP_B
+      })
+      
+      output$LP_C <- renderPlotly({
+        figLP_C <- plot_ly(emptydataRec(), type='scatter')
+        figLP_C <- figLP_C %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figLP_C
+      })
+      
+      output$LP_D <- renderPlotly({
+        figLP_D <- plot_ly(emptydataRec(), type='scatter')
+        figLP_D <- figLP_D %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figLP_D
+      })
+      
+      output$PC_A <- renderPlotly({
+        figPC_A <- plot_ly(emptydataRec(), type='pie')
+        figPC_A <- figPC_A %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_A
+      })
+      
+      output$PC_B <- renderPlotly({
+        figPC_B <- plot_ly(emptydataRec(), type='pie')
+        figPC_B <- figPC_B %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_B
+      })
+      
+      output$PC_C <- renderPlotly({
+        figPC_C <- plot_ly(emptydataRec(), type='pie')
+        figPC_C <- figPC_C %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_C
+      })
+      
+      output$PC_D <- renderPlotly({
+        figPC_D <- plot_ly(emptydataRec(), type='pie')
+        figPC_D <- figPC_D %>% layout(title = paste0("Please Make Selection"),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_D
       })
       
     } else {
       
-      #Plot Amount v ReportYearCV by WaterSourceUUID
+      #Line Plot A: Amount v ReportYearCV by BeneficialUseCV
       output$LP_A <- renderPlotly({
         
-        #Subset of data & group by ReportyearCV & WaterSourceID
-        tempAggAmountTable_WS <- left_join(x = tempAggAmountTable, y = PWaSoTable, by = "WaterSourceID")
-        finalAFF_WS <- tempAggAmountTable_WS %>% group_by(ReportYearCV, WaterSourceUUID) %>% summarise(SumAmouts = sum(Amount))
+        #Subset of data & group by ReportyearCV & BeneficialUseCV
+        finalAFF_Ben <- tempPAggTable %>% group_by(BeneficialUseCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
         
         #The Plot
-        LPA <- ggplot(data=finalAFF_WS, aes(x=ReportYearCV, y=SumAmouts, group=WaterSourceUUID, col=WaterSourceUUID)) +
-          geom_line(show.legend = FALSE) +
-          geom_point(show.legend = FALSE) +
-          ggtitle(paste("Reporting Area WaDE 2.0 ID: ",click)) +
-          scale_x_continuous(breaks = seq(round(min(finalAFF_WS$ReportYearCV), digits =0),
-                                          round(max(finalAFF_WS$ReportYearCV), digits =0),
-                                          round(sqrt(max(finalAFF_WS$ReportYearCV) - min(finalAFF_WS$ReportYearCV)), digits =0))) +
-          scale_y_continuous(labels = scales::comma) +
-          labs(x="Report Year", y="Annual Water Use (Acre-Feet)", col = "WaterSourceType") +
-          theme(legend.title = element_blank(), legend.text = element_text(size = 8),
-                plot.title = element_text(hjust = 0.5, size = 8),
-                panel.background = element_blank(),
-                axis.title.y=element_text(size = 10), axis.text.y=element_text(size = 8), axis.line.y = element_line(size = 1),
-                axis.title.x=element_text(size = 10), axis.text.x=element_text(size = 8), axis.line.x = element_line(size = 1),
-                plot.margin = margin(t=0, r=0, b=0, l=0, "cm"))
-        
-        ggplotly(LPA) %>%
-          layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.3))
-        
+        figLP_A <- plot_ly(data=finalAFF_Ben, x=~ReportYearCV, y=~SumAmouts,
+                           group=~BeneficialUseCV, color=~BeneficialUseCV,
+                           type='scatter', mode='lines+markers')
+        figLP_A <- figLP_A %>% layout(xaxis = list(title="Report Year"),
+                                      yaxis = list(title="Annual Water Use (Acre-Feet)"),
+                                      showlegend=TRUE)
+        figLP_A
       })
       
-      #Plot Amount v ReportyearCV by VariableCV
+      #Line Plot B: Amount v ReportYearCV by WaterSourceTypeCV
       output$LP_B <- renderPlotly({
-        
-        #Subset of data & group by ReportyearCV & VariableCV
-        tempAggAmountTable_V <- left_join(x = tempAggAmountTable, y = VarTable, by = "VariableSpecificID")
-        finalAFF_V <- tempAggAmountTable_V %>% group_by(ReportYearCV, VariableCV) %>% summarise(SumAmouts = sum(Amount))
+        #Subset of data & group by ReportyearCV
+        finalAFF_WS <- tempPAggTable %>% group_by(WaterSourceTypeCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
         
         #The Plot
-        LPB <- ggplot(data=finalAFF_V, aes(x=ReportYearCV, y=SumAmouts, group=VariableCV, col=VariableCV)) +
-          geom_line(show.legend = FALSE) +
-          geom_point(show.legend = FALSE) +
-          ggtitle(paste("Reporting Area WaDE 2.0 ID: ",click)) +
-          scale_x_continuous(breaks = seq(round(min(finalAFF_V$ReportYearCV), digits =0),
-                                          round(max(finalAFF_V$ReportYearCV), digits =0),
-                                          round(sqrt(max(finalAFF_V$ReportYearCV) - min(finalAFF_V$ReportYearCV)), digits =0))) +
-          scale_y_continuous(labels = scales::comma) +
-          labs(x="Report Year", y="Annual Water Use (Acre-Feet)", col = "VariableType") +
-          theme(legend.title = element_blank(), legend.text = element_text(size = 8),
-                plot.title = element_text(hjust = 0.5, size = 8),
-                panel.background = element_blank(),
-                axis.title.y=element_text(size = 10), axis.text.y=element_text(size = 8), axis.line.y = element_line(size = 1),
-                axis.title.x=element_text(size = 10), axis.text.x=element_text(size = 8), axis.line.x = element_line(size = 1),
-                plot.margin = margin(t=0, r=0, b=0, l=0, "cm"))
-        
-        ggplotly(LPB) %>%
-          layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.3))
+        figLP_B <- plot_ly(data=finalAFF_WS, x=~ReportYearCV, y=~SumAmouts,
+                           group=~WaterSourceTypeCV, color=~WaterSourceTypeCV,
+                           type='scatter', mode='lines+markers')
+        figLP_B <- figLP_B %>% layout(xaxis = list(title="Report Year"),
+                                      yaxis = list(title="Annual Water Use (Acre-Feet)"),
+                                      showlegend=TRUE)
+        figLP_B
       })
-    }
+      
+      #Line Plot C: Amount v ReportYearCV by VariableCV
+      output$LP_C <- renderPlotly({
+        
+        #Subset of data & group by ReportyearCV & VariableCV
+        finalAFF_V <- tempPAggTable %>% group_by(VariableCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
+        
+        #The Plot
+        figLP_C <- plot_ly(data=finalAFF_V, x=~ReportYearCV, y=~SumAmouts,
+                           group=~VariableCV, color=~VariableCV,
+                           type='scatter', mode='lines+markers')
+        figLP_C <- figLP_C %>% layout(xaxis = list(title="Report Year"),
+                                      yaxis = list(title="Annual Water Use (Acre-Feet)"),
+                                      showlegend=TRUE)
+        figLP_C
+      })
+      
+      #Line Plot D: Amount v ReportYearCV by VariableSpecificCV
+      output$LP_D <- renderPlotly({
+        
+        #Subset of data & group by ReportyearCV & VariableSpecificCV
+        finalAFF_Vs <- tempPAggTable %>% group_by(VariableSpecificCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
+        
+        #The Plot
+        figLP_D <- plot_ly(data=finalAFF_Vs, x=~ReportYearCV, y=~SumAmouts,
+                           group=~VariableSpecificCV, color=~VariableSpecificCV,
+                           type='scatter', mode='lines+markers')
+        figLP_D <- figLP_D %>% layout(xaxis = list(title="Report Year"),
+                                      yaxis = list(title="Annual Water Use (Acre-Feet)"),
+                                      showlegend=TRUE)
+        figLP_D
+      })
+      
+      
+      #Pice Chart A: Amount v BeneficialUseCV Type
+      output$PC_A <- renderPlotly({
+        
+        #Subset of data & group by ReportyearCV
+        tempPAggTable2 <- tempPAggTable %>% filter(ReportYearCV %in% input$ReportYearInput)
+        finalAFF_Ben <- tempPAggTable2 %>% group_by(BeneficialUseCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
+        
+        #The Plot
+        figPC_A <- plot_ly(data = finalAFF_Ben, type = 'pie', labels = ~BeneficialUseCV, values = ~SumAmouts, colors= ~BeneficialUseCV)
+        figPC_A <- figPC_A %>% layout(title = paste0("Year: ", input$ReportYearInput),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_A
+      })
+      
+      #Pice Chart B: Amount v Water Source Type
+      output$PC_B <- renderPlotly({
+        
+        #Subset of data & group by ReportyearCV
+        tempPAggTable2 <- tempPAggTable %>% filter(ReportYearCV %in% input$ReportYearInput)
+        finalAFF_WS <- tempPAggTable2 %>% group_by(WaterSourceTypeCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
+        
+        #The Plot
+        figPC_B <- plot_ly(data = finalAFF_WS, type = 'pie', labels = ~WaterSourceTypeCV, values = ~SumAmouts,
+                           group= ~WaterSourceTypeCV, colors =~WaterSourceTypeCV)
+        figPC_B <- figPC_B %>% layout(title = paste0("Year: ", input$ReportYearInput),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_B
+      })
+      
+      #Pice Chart C: Amount v Variable Type
+      output$PC_C <- renderPlotly({
+        
+        #Subset of data & group by ReportyearCV
+        tempPAggTable2 <- tempPAggTable %>% filter(ReportYearCV %in% input$ReportYearInput)
+        finalAFF_VS <- tempPAggTable2 %>% group_by(VariableCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
+        
+        #The Plot
+        figPC_C <- plot_ly(data = finalAFF_VS, type = 'pie', labels = ~VariableCV, values = ~SumAmouts, colors= ~VariableCV)
+        figPC_C <- figPC_C %>% layout(title = paste0("Year: ", input$ReportYearInput),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_C
+      })
+      
+      #Pice Chart D: Amount v VariableSpecificCV Type
+      output$PC_D <- renderPlotly({
+        
+        #Subset of data & group by ReportyearCV
+        tempPAggTable2 <- tempPAggTable %>% filter(ReportYearCV %in% input$ReportYearInput)
+        finalAFF_VS <- tempPAggTable2 %>% group_by(VariableSpecificCV, ReportYearCV) %>% summarise(SumAmouts = sum(Amount))
+        
+        #The Plot
+        figPC_D <- plot_ly(data = finalAFF_VS, type = 'pie', labels = ~VariableSpecificCV, values = ~SumAmouts, colors= ~VariableSpecificCV)
+        figPC_D <- figPC_D %>% layout(title = paste0("Year: ", input$ReportYearInput),
+                                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        figPC_D
+      })
+      
+    } #end else
   })
   
-  ####### End County Plots Based on Observe Functions s ########
+  ####### End Line Plots Based on Observe Functions ########
   ##################################################################
   
   
@@ -233,25 +382,33 @@ server <- function(input, output, session) {
   
   #Incremental Changes to the Map
   observe({
-    req(input$tab_being_displayed == "County")  # Helps solves issue of observe({ waiting for user input before implementing.
+    req(input$tab_being_displayed == "County")  # Helps solves issue of observe waiting for user input before implementing.
     
-    #Join AggAmountTable & VarTable. Reduce to selected year.
-    data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
+    #Filter P_AggAmountTable by Variable, Year, and State.
+    data <- PAggTable %>%
       filter(
-        VariableCV %in% c("Consumptive use", "Consumptive Use"),
+        ReportingUnitTypeCV == 'County',
+        VariableCV %in% input$VariableCVInput,
         ReportYearCV %in% input$ReportYearInput,
         State %in% input$StateInput
-        ) %>%
+      ) %>%
       group_by(ReportingUnitID, ReportYearCV, VariableCV) %>%
       summarise(Amount = sum(Amount))
     
     #Merge SpatialPolygonsDataFrame with dataframe
     myNewCountySF <- merge(CountySF, data, by="ReportingUnitID")
-
+    
     #Map & Legend Color Palette
+    if (max(data$Amount) < 0) {
+      minAmount <- 0
+      maxAmount <- 0
+    } else {
+      minAmount <- min(data$Amount)
+      maxAmount <- max(data$Amount)
+    }
     pal <- colorNumeric(
-      palette = "Blues", 
-      domain = myNewCountySF$Amount,
+      palette = "Blues",
+      domain = c(minAmount, maxAmount),
       na.color = NA)
     
     #Create the Map
@@ -260,6 +417,20 @@ server <- function(input, output, session) {
     ) %>%
       clearShapes() %>% #removes points
       clearControls() %>% #removes legend
+      addProviderTiles(providers$Esri.DeLorme, group = "DeLorme") %>%
+      addProviderTiles(providers$Esri.WorldStreetMap, group = "WorldStreetMap") %>%
+      addProviderTiles(providers$Esri.WorldTopoMap, group = "WorldTopoMap") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "WorldImagery") %>%
+      addPolygons(
+        data = USStateLinesSF,
+        layerId = ~STUSPS,
+        color = "#444444",
+        weight = 3,
+        opacity = 1.0,
+        fillOpacity = 0,
+        group = "State Borders",
+        options = pathOptions(clickable = FALSE)
+      ) %>%
       addPolygons(
         data = CountySF,
         layerId = ~ReportingUnitUUID,
@@ -290,7 +461,7 @@ server <- function(input, output, session) {
           "Type: ", ReportingUnitTypeCV, "<br>",
           "Area Name: ", ReportingUnitName, "<br>",
           "Area ID : ", ReportingUnitID, "<br>",
-          "Consumptive Use : ", Amount, "<br>",
+          "Amount : ", Amount, "<br>",
           "Additional Info: ", paste0('<a href = "https://waterdataexchangewswc.shinyapps.io/AggPlotApp_ver1/?RUUUIDInput=', ReportingUnitUUID, '"> Link </a>'), "<br>"),
         highlightOptions = highlightOptions(
           color = "white",
@@ -298,12 +469,16 @@ server <- function(input, output, session) {
           bringToFront = TRUE)
       ) %>%
       addLegend(position = "bottomleft",
-                title = "Consumptive Use (AF)",
+                title = "Total Water (AF)",
                 pal = pal,
-                values = myNewCountySF$Amount
-      ) 
-  })
-  
+                values = c(minAmount, maxAmount)
+      ) %>%
+      addLayersControl(
+        baseGroups = c("DeLorme", "WorldStreetMap", "WorldTopoMap", "WorldImagery"),
+        overlayGroups = c("State Borders"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
+  }) #endObserve
   
   
   ######## End County Map ########
@@ -333,10 +508,11 @@ server <- function(input, output, session) {
   observe({
     req(input$tab_being_displayed == "HUC8")
     
-    #Join AggAmountTable & VarTable. Reduce to selected year.
-    data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
+    #Filter P_AggAmountTable by Variable, Year, and State.
+    data <- PAggTable %>%
       filter(
-        VariableCV %in% c("Consumptive use", "Consumptive Use"),
+        ReportingUnitTypeCV == 'HUC8',
+        VariableCV %in% input$VariableCVInput,
         ReportYearCV %in% input$ReportYearInput,
         State %in% input$StateInput
       ) %>%
@@ -344,16 +520,40 @@ server <- function(input, output, session) {
       summarise(Amount = sum(Amount))
     
     #Merge SpatialPolygonsDataFrame with dataframe
-    myNewHUCSF <- merge(HUCSF, data)
+    myNewHUCSF <- merge(HUCSF, data, by="ReportingUnitID")
     
     #Map & Legend Color Palette
-    pal <- colorNumeric(palette = "Blues", domain = myNewHUCSF$Amount)
+    if (max(data$Amount) < 0) {
+      minAmount <- 0
+      maxAmount <- 0
+    } else {
+      minAmount <- min(data$Amount)
+      maxAmount <- max(data$Amount)
+    }
+    pal <- colorNumeric(
+      palette = "Blues",
+      domain = c(minAmount, maxAmount),
+      na.color = NA)
     
     leafletProxy(
       mapId = "HUC8Map",
     ) %>%
       clearShapes() %>%
       clearControls() %>%
+      addProviderTiles(providers$Esri.DeLorme, group = "DeLorme") %>%
+      addProviderTiles(providers$Esri.WorldStreetMap, group = "WorldStreetMap") %>%
+      addProviderTiles(providers$Esri.WorldTopoMap, group = "WorldTopoMap") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "WorldImagery") %>%
+      addPolygons(
+        data = USStateLinesSF,
+        layerId = ~STUSPS,
+        color = "#444444",
+        weight = 3,
+        opacity = 1.0,
+        fillOpacity = 0,
+        group = "State Borders",
+        options = pathOptions(clickable = FALSE)
+      ) %>%
       addPolygons(
         data = HUCSF,
         layerId = ~ReportingUnitUUID,
@@ -393,10 +593,15 @@ server <- function(input, output, session) {
           bringToFront = TRUE)
       ) %>%
       addLegend(position = "bottomleft",
-                title = "Consumptive Use (AF)",
+                title = "Total Water (AF)",
                 pal = pal,
-                values = myNewHUCSF$Amount
-      ) 
+                values = c(minAmount, maxAmount)
+      ) %>%
+      addLayersControl(
+        baseGroups = c("DeLorme", "WorldStreetMap", "WorldTopoMap", "WorldImagery"),
+        overlayGroups = c("State Borders"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
   })
   
   ######## End HUC8 Map ########
@@ -426,10 +631,11 @@ server <- function(input, output, session) {
   observe({
     req(input$tab_being_displayed == "Custom")
     
-    #Join AggAmountTable & VarTable. Reduce to selected year.
-    data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
+    #Filter P_AggAmountTable by Variable, Year, and State.
+    data <- PAggTable %>%
       filter(
-        VariableCV %in% c("Consumptive use", "Consumptive Use"),
+        ReportingUnitTypeCV == c('Subarea', 'Basin', 'Detailed Analysis Unit by County (DAUCO)', 'Active Management Area'),
+        VariableCV %in% input$VariableCVInput,
         ReportYearCV %in% input$ReportYearInput,
         State %in% input$StateInput
       ) %>%
@@ -437,22 +643,40 @@ server <- function(input, output, session) {
       summarise(Amount = sum(Amount))
     
     #Merge SpatialPolygonsDataFrame with dataframe
-    myNewCustomSF<- merge(CustomSF, data)
+    myNewCustomSF<- merge(CustomSF, data, by="ReportingUnitID")
     
     #Map & Legend Color Palette
-    # RUTypePalette <- colorFactor(palette = c("#FFFF00", "#006400", "#0000FF", "#DC143C"),
-    #                              levels = c("Basin", 
-    #                                         "Subarea", 
-    #                                         "Detailed Analysis Unit by County (DAUCO)",
-    #                                         "Active Management Area"),
-    #                              na.color = "#808080")
-    pal <- colorNumeric(palette = "Blues", domain = myNewCustomSF$Amount)
+    if (max(data$Amount) < 0) {
+      minAmount <- 0
+      maxAmount <- 0
+    } else {
+      minAmount <- min(data$Amount)
+      maxAmount <- max(data$Amount)
+    }
+    pal <- colorNumeric(
+      palette = "Blues",
+      domain = c(minAmount, maxAmount),
+      na.color = NA)
     
     leafletProxy(
       mapId = "CustomMap",
     ) %>%
       clearShapes() %>%
       clearControls() %>%
+      addProviderTiles(providers$Esri.DeLorme, group = "DeLorme") %>%
+      addProviderTiles(providers$Esri.WorldStreetMap, group = "WorldStreetMap") %>%
+      addProviderTiles(providers$Esri.WorldTopoMap, group = "WorldTopoMap") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "WorldImagery") %>%
+      addPolygons(
+        data = USStateLinesSF,
+        layerId = ~STUSPS,
+        color = "#444444",
+        weight = 3,
+        opacity = 1.0,
+        fillOpacity = 0,
+        group = "State Borders",
+        options = pathOptions(clickable = FALSE)
+      ) %>%
       addPolygons(
         data = CustomSF,
         layerId = ~ReportingUnitUUID,
@@ -491,10 +715,15 @@ server <- function(input, output, session) {
           bringToFront = TRUE)
       ) %>%
       addLegend(position = "bottomleft",
-                title = "Consumptive Use (AF)",
+                title = "Total Water (AF)",
                 pal = pal,
-                values = myNewCustomSF$Amount
-      ) 
+                values = c(minAmount, maxAmount)
+      ) %>%
+      addLayersControl(
+        baseGroups = c("DeLorme", "WorldStreetMap", "WorldTopoMap", "WorldImagery"),
+        overlayGroups = c("State Borders"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
   })
   
   ######## End Custom Map ########
@@ -524,27 +753,51 @@ server <- function(input, output, session) {
   observe({
     req(input$tab_being_displayed == "USBR Upper Colorado River Basin Tributarys")
     
-    #Join AggAmountTable & VarTable. Reduce to selected year.
-    data <- left_join(x = AggAmountTable, y = VarTable, by = "VariableSpecificID") %>%
+    #Filter P_AggAmountTable by Variable and Year.
+    data <- PAggTable %>%
       filter(
-        VariableCV %in% c("Consumptive use", "Consumptive Use"),
-        ReportYearCV %in% input$ReportYearInput,
-        State %in% input$StateInput
+        ReportingUnitTypeCV == 'Tributary',
+        VariableCV %in% input$VariableCVInput,
+        ReportYearCV %in% input$ReportYearInput
       ) %>%
       group_by(ReportingUnitID, ReportYearCV, VariableCV) %>%
       summarise(Amount = sum(Amount))
     
     #Merge SpatialPolygonsDataFrame with dataframe
-    myNewUSBR_UCRB_TributarySF <- merge(USBR_UCRB_TributarySF, data)
+    myNewUSBR_UCRB_TributarySF <- merge(USBR_UCRB_TributarySF, data, by="ReportingUnitID")
     
     #Map & Legend Color Palette
-    pal <- colorNumeric(palette = "Blues", domain = myNewUSBR_UCRB_TributarySF$Amount)
+    if (max(data$Amount) < 0) {
+      minAmount <- 0
+      maxAmount <- 0
+    } else {
+      minAmount <- min(data$Amount)
+      maxAmount <- max(data$Amount)
+    }
+    pal <- colorNumeric(
+      palette = "Blues",
+      domain = c(minAmount, maxAmount),
+      na.color = NA)
     
     leafletProxy(
       mapId = "USBR_UCRB_TributaryMap",
     ) %>%
       clearShapes() %>%
       clearControls() %>%
+      addProviderTiles(providers$Esri.DeLorme, group = "DeLorme") %>%
+      addProviderTiles(providers$Esri.WorldStreetMap, group = "WorldStreetMap") %>%
+      addProviderTiles(providers$Esri.WorldTopoMap, group = "WorldTopoMap") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "WorldImagery") %>%
+      addPolygons(
+        data = USStateLinesSF,
+        layerId = ~STUSPS,
+        color = "#444444",
+        weight = 3,
+        opacity = 1.0,
+        fillOpacity = 0,
+        group = "State Borders",
+        options = pathOptions(clickable = FALSE)
+      ) %>%
       addPolygons(
         data = USBR_UCRB_TributarySF,
         layerId = ~ReportingUnitUUID,
@@ -583,10 +836,15 @@ server <- function(input, output, session) {
           bringToFront = TRUE)
       ) %>%
       addLegend(position = "bottomleft",
-                title = "Consumptive Use (AF)",
+                title = "Total Water (AF)",
                 pal = pal,
-                values = myNewUSBR_UCRB_TributarySF$Amount
-      ) 
+                values = c(minAmount, maxAmount)
+      ) %>%
+      addLayersControl(
+        baseGroups = c("DeLorme", "WorldStreetMap", "WorldTopoMap", "WorldImagery"),
+        overlayGroups = c("State Borders"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
   })
   
   ######## End USBR_UCRB_Tributary Map ########
@@ -600,35 +858,39 @@ server <- function(input, output, session) {
   observe({
     #county
     if (input$tab_being_displayed == "County") {
-      click <- input$CountyMap_shape_click$id
+      clickVal <- input$CountyMap_shape_click$id
     }
     
     #HUC8
     if (input$tab_being_displayed == "HUC8") {
-      click <- input$HUC8Map_shape_click$id
+      clickVal <- input$HUC8Map_shape_click$id
     }
     
     #Custom
     if (input$tab_being_displayed == "Custom") {
-      click <- input$CustomMap_shape_click$id
+      clickVal <- input$CustomMap_shape_click$id
     }
     
     #USBR_UCRB_Tributary
     if (input$tab_being_displayed == "USBR Upper Colorado River Basin Tributarys") {
-      click <- input$USBR_UCRB_TributaryMap_shape_click$id
+      clickVal <- input$USBR_UCRB_TributaryMap_shape_click$id
     }
     
-    #Creating string to pass to API call function based on click$id value
+    #Clear when Reset Button is Clicked
+    if (input$reset_input == TRUE) {
+      clickVal <- NULL
+    }
+    
+    #Creating string to pass to API call function based on clickVal$id value
     str1 <- "https://wade-api-qa.azure-api.net/v1/AggregatedAmounts?ReportingUnitUUID="
-    str2 <- toString(click)
+    str2 <- toString(clickVal)
     outstring <- paste0(str1,str2)
-    print(outstring)
     
     
     #API Call Function
     #This returns empty / shows nothing if null
-    filteredSiteAPICall <- eventReactive(click, {
-      if (is.null(click)) {
+    filteredSiteAPICall <- eventReactive(clickVal, {
+      if (is.null(clickVal)) {
         shiny::showNotification("No data", type = "error")
         NULL
       } else {

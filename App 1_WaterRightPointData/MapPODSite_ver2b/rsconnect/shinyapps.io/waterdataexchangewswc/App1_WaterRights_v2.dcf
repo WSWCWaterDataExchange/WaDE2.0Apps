@@ -1,0 +1,13 @@
+name: App1_WaterRights_v2
+title: App1_WaterRights_v2
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2982221
+bundleId: 3767299
+url: https://waterdataexchangewswc.shinyapps.io/App1_WaterRights_v2/
+when: 1603300050.29255
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: gomap.js|google-analytics.html|Notes on Project.txt|README.md|bonus code|NotEssentialData

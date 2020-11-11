@@ -79,15 +79,6 @@ ui <- dashboardPage(
     
     ## Output Plots
     fluidRow(
-      HTML("
-        <h4 style='text-align:center'; class='parallax'> 
-        <br>
-        Amounts Plots (click desired site on map)
-        </h4>
-      "),
-      box(title = "Amount Plot", width = 6, solidHeader = TRUE, status = "danger",
-          plotlyOutput(outputId = "LP_A")
-      ) #end box
     ), #end fluidRow
     
     

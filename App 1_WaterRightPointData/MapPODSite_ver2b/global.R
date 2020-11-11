@@ -1,4 +1,4 @@
-# App: MapPODSite_ver2b
+# App: App1_WaterRightPointData_v2b
 # Sec 0. Code Purpose and Version Notes 
 # Date: 07/16/2020
 # Purpose: To view POD Sites across the Western United Sites.
@@ -36,12 +36,14 @@ library(hash) #for creating dictionaries
 # MapDeck() Style and Token Acesses.
 access_token <- "pk.eyJ1IjoicmphbWVzd3N3YyIsImEiOiJjazllcndyb20wNDFpM2huYWRhdmpieW1vIn0.N9V48xEQF4EBsLgQ7j5SGA"
 
-# Input Data
+# Input Data: Tables
 P_AlloLFSite  <- import("data/P_AllowLJSite.RData") # Use this with filters to reduce amount of sites
 P_SiteLFAllo  <- import("data/P_SiteLJAllow.RData") # All sites
 P_SiteLFAllo_Basins  <- import("data/P_SiteLJAllow_Basin.RData") # River Basin Sites
-BasinsSF <- sf::st_read("data/BasinsSF.shp") # Colorado River Basin Shapefile
 
+# Input Data: Shapefiles
+BasinsSF <- sf::st_read("data/BasinsSF.shp") # Colorado River Basin Shapefile
+USStateLinesSF <- sf::st_read("data/USStateLines.shp") # State Boundary Lines Shapefile
 
 ################################################################################################
 ################################################################################################
@@ -106,7 +108,7 @@ BenUseColorDict[["Wildlife"]] <- "#FF0000FF"
 StateList <- c("CA", "CO", "ID", "ND", "NE", "NM", "NV",
                "OK", "OR", "TX", "UT", "WA")
 
-RiverBasinList <- c("Colorado River Basin", "Rio Grande River Basin", "Columbia River Basin")
+RiverBasinList <- c("Colorado River Basin", "Rio Grande River Basin", "Columbia River Basin", "Bear River Basin")
 
 SiteTypeList <- c(
   "Abandoned",

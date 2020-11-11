@@ -1,4 +1,4 @@
-# App: MapSiteSpecific_ver1a
+# App: App 3_SiteSpecificAmounts_v1
 
 ################################################################################################
 ################################################################################################
@@ -18,7 +18,7 @@ ui <- dashboardPage(
     
     ## Header
     fluidRow(
-      box(width = 8, status="warning",
+      box(width=8, status="warning",
           HTML("
         <html>
           <head>
