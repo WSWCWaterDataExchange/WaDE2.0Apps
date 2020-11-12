@@ -68,7 +68,7 @@ server <- function(input, output, session) {
     
     #DAUCO
     else if (input$tab_being_displayed == "Detailed Analysis Units by County") {
-      ruLabel = 'Custom Report Year'
+      ruLabel = 'DAUCO Report Year'
       VariableCV = "Consumptive Use"
       Year = 2011
       YearList= c(2011, 2012, 2013, 2014, 2015)
@@ -113,7 +113,7 @@ server <- function(input, output, session) {
     #Update the Input
     updateSelectInput(session, inputId = 'ReportYearInput', label = ruLabel,
                       choices = YearList, selected = Year)
-    updateSelectInput(session, inputId = 'VariableCVInput', label = ruLabel,
+    updateSelectInput(session, inputId = 'VariableCVInput',
                       choices = VariableCVList, selected = VariableCV)
   })
   
