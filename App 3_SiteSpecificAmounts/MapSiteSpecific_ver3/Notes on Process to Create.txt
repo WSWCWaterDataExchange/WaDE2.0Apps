@@ -1,0 +1,14 @@
+Process to Create:
+1) Input tables / shapefile from custom SQL queries in SS data file
+2) For Links: In ArcGIS Pro, had to create point file using POU lat and long -> create LinkID field -> generate xy-to-line using start and end long & lat -> perform join on site file to maintain POU and POD SiteUUIDs -> trim unused fields -> export to links shapefile.
+
+Creation Note:
+Issue of trying to use custom marker icons.  Slows down the proecssing speed of the map considerably. Reducing file size did not really help.
+
+Data Findings:
+1) SiteVariableAmounts_fact wise, our POD plots share the same Amounts by ReportYearCV values with their POUs.  That is also true from the upload-to-WaDE data files.
+2) Not really seeing a difference between Amount per ReportYearCV between Beneficial Use, Water Source Type, & Variable Specific Type. Although for Utah ss data I think this was intentional.
+3) Issue of discrepancy in WaterSourceTypeCV between sites.  All POUs are Unspecified, while PODs on map are a mix of Surface Water & Groundwater.
+
+Questions:
+1) Can I make a play animation, that shows when a link occurs & when it doesn't?  Do I need to do that anyways if there are no gap years and the POUs-PODs share the same Amount per ReportYearCV?
