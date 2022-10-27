@@ -1,0 +1,14 @@
+name: SiteSpecificPublicSupplyWaterDemo
+title: SiteSpecificPublicSupplyWaterDemo
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7359619
+bundleId: 6444747
+url: https://waterdataexchangewswc.shinyapps.io/SiteSpecificPublicSupplyWaterDemo/
+when: 1666821404.16173
+lastSyncTime: 1666821404.16173
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|bonus code/.ipynb_checkpoints/Format_Input_Tables-checkpoint.ipynb|bonus code/.ipynb_checkpoints/Test_WaDE_API_ssCall-checkpoint.ipynb|bonus code/converttablerdata.R|bonus code/Format_Input_Tables.ipynb|NotesOnCreation.txt|NotEssentialData

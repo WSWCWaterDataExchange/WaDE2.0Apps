@@ -1,0 +1,72 @@
+############################################
+##Notes
+1) Some ND sites have comma seperated lat and long combo.  Removed for now.
+2) Lots of UT ssps sites with a 0 for lat & long.  Removed by hand for now.
+
+3) issues with building links for UT.  Having trouble making connections on CommunityWaterSupplySystem.  Need to review source data.
+
+
+############################################
+## Process to Create
+# In SQL
+1) Generate and export SiteVariableAmounts.csv & Sites.csv files.  We want LIKE '%ssps_S%' sites and records only.
+
+# In Python Jupyter Notebook
+2) Using custom python code, input Sites.csv & groupby SiteNativeID field.  Export as Sites_v2.csv
+3) Filter Sites_v2.csv down to PODorPOUSite == POD.  Export as Sites_v2_POD.xlsx.
+4) Filter Sites_v2.csv down to PODorPOUSite == POU.  Export as Sites_v2_POU.xlsx.
+
+# In ArcGIS Pro
+5) Import relvant shapefiles for each state of interest.  Simplfy files down to SiteNativeID, State, Shape, Shape_length, Shape_Area.  
+	- For TXssps data, besure to include a "POU" into the SiteNativeID.
+	- For NJ, convert to string and added "NJ" to front of string for both shapefile & Sites_v2_POU.xlsx
+6) Perform Merge on shapefiles to create single file, SSPS_Merge.  Keep attributes
+7) Loade in Sites_v2_POU.csv file.  Perform join with SSPS_Merge and Sites_v2_POU.xlsx via SiteNativeID.
+8) Export joined SS_Merge as SS_Merge_withAtr.shp.
+
+
+
+
+Need the folowing input files for RShiny...
+- AmountsData with a SiteVariableAmounts.csv.  Must have SiteNativeID.
+- pod sites with a site.csv.   Must have SiteNativeID & CommunityWaterSupplySystem.
+- pou polygons with a polyPOUSF.shp.   Must have SiteNativeID & CommunityWaterSupplySystem.
+- link polygon with linkSF.shp   Must have CommunityWaterSupplySystem.
+
+
+
+
+
+Process to Create:
+1) Input tables / shapefile from custom SQL queries in SS data file.
+2) For creating the LinksSF shapefile in ArcGIS Pro...
+	-> remove duplicate rows from csv.
+	-> create point file using POU lat and long 
+	-> create LinkID field, caculate to row value.
+	-> generate xy-to-line using start and end long & lats.
+	-> perform join on site file to maintain POU and POD SiteUUIDs & CommunityWaterSupplySystem fields.
+	-> remmove unused fields from join.
+	-> export shapefile.
+3) WaterSourceType & CommunityWaterSupplySystem line plots only use data associated with BeneficialUseCV = "Total (DCII)".
+
+Data Findings:
+1) SiteVariableAmounts_fact wise, our POD plots share the same Amounts by ReportYearCV values with their POUs.  That is also true from the upload-to-WaDE data files.
+2) Issue of discrepancy in WaterSourceTypeCV between sites.  All POUs are Unspecified, while PODs on map are a mix of Surface Water & Groundwater.
+
+Questions:
+1) Can I make a play animation, that shows when a link occurs & when it doesn't?  Do I need to do that anyways if there are no gap years and the POUs-PODs share the same Amount per ReportYearCV?
+
+Creation / Experimentation Note:
+1) Issue of trying to use custom marker icons.  Slows down the proecssing speed of the map considerably. Reducing file size of images did not help.
+2) Was able to create site highlight optoin for ComunityWaterSupplySystem groups using the addCircleMarkers() function instead of addCircles().  Can't use addCircles() as existing sites are removed upon new click.
+3) Having issues with mapdeck().  
+	a) Problems of radius_max_pixels() & radius_min_pixels() cannot accept unique values.
+	b) fill_colour() requires a hex color code.  fill_opacity() will not work if a hex color code is used (?). Having dificulty geting the alapha of the hex color code to be recognized.
+	c) To use more than one add_scatterplot(), be sure to use the layer_id arguments. So issue of trying to map ss sites with wr sites.
+4) For similar ss to wr sites...
+	a) looking at a map / overlay, it does appear there are some ss sites that are similar to wr sites.
+	b) no similar ID to use (i.e., SiteNativeID).
+	c) ss & wr sites with similar Longitude or Latitude, but not both.  This could be an issue of spatial exention from the source data (i.e., the agecines not using the same type).
+	d) No similar site names between ss & wr, but there are sites that share a similar naming convention.
+
+

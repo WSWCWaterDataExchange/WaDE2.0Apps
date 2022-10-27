@@ -1,0 +1,3 @@
+1) Mapdeck uses a special coloring funciton.  Still uses HEX code, but have to add a "FF" to the end of each one.
+2) Need to use library(sf) & sf::st_read() function to work with shapefiles in MapDeck.
+3) Error with Mapdeck.  Does not return 'id' value.  Have to scape by this by returning index value, create new dataframe, and use that to find SiteUUID from click event.

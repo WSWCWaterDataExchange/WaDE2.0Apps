@@ -1,0 +1,215 @@
+#### UI
+
+    ## Output Plots A-B
+    fluidRow(
+      HTML("
+        <br>
+        <h3 style='text-align:center'; class='parallax'>Amounts Plots (click desired site on map)</h3>
+        <p style='color:red; text-align:center'; class='parallax_description'>DISCLAIMER: Data not finalized.</p>
+      "),
+      box(title = "Site Specific Water Use by Variable Specific Type", status = "info", solidHeader = TRUE,
+          plotlyOutput(outputId = "LP_A")
+      ),#end box
+      box(title = "Community Supply System Delivered (POU) versus Withdrawn (POD) Use", status = "success", solidHeader = TRUE,
+          plotlyOutput(outputId = "LP_B")
+      )#end box
+    ), #end fluidRow#end fluidRow
+    
+    ## Output Plots C-D
+    fluidRow(
+      box(title = "Community Supply System POD Water Use by Site", status = "success", solidHeader = TRUE,
+          plotlyOutput(outputId = "LP_C")
+      ),#end box
+      box(title = "Community Supply System POD by Water Source Type", status = "success", solidHeader = TRUE,
+          plotlyOutput(outputId = "LP_D")
+      )#end box
+    ) #end fluidRow
+
+
+
+#### Server
+
+  
+  ##################################################################
+  ####### Line Plots Based on Observe Functions ########
+  
+  # Create Empty Line Plots on App Launch
+  observe({
+    
+    # Crate Empty Plot Function
+    createEmptyPlotFunc <- function() {
+      LP <- plot_ly(type='scatter', mode='lines+markers')
+      LP <- LP %>% layout(title = paste0("Please Make a Selection"),
+                          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+      LP
+      return(LP)
+    }
+    
+    # Call Empty Line Plot Function
+    output$LP_A <- renderPlotly(createEmptyPlotFunc())
+    output$LP_B <- renderPlotly(createEmptyPlotFunc())
+    output$LP_C <- renderPlotly(createEmptyPlotFunc())
+    output$LP_D <- renderPlotly(createEmptyPlotFunc())
+    
+  }) #endObserve
+  
+  
+  # Create Line Plots based on observeEvent - Click Marker (PODs)
+  observeEvent(eventExpr=input$mapA_marker_click, handlerExpr={
+    
+    # Filter shapefile with clickEvent
+    clickVal <- input$mapA_marker_click$id
+    tempSiteDataReac <- sitesPODRec() %>% subset(SiteUUID %in% clickVal)
+    CWSSVal <- tempSiteDataReac$CommunityWaterSupplySystem
+    
+    createLinePlotsAFunc(tempSiteDataReac, clickVal, CWSSVal)
+    createLinePlotsBFunc(clickVal, CWSSVal)
+    createLinePlotsCFunc(clickVal, CWSSVal)
+    createLinePlotsDFunc(clickVal, CWSSVal)
+  }) #end ObserveEvent
+  
+  
+  # Create Line Plots based on observeEvent - Click Shape (POUs)
+  observeEvent(eventExpr=input$mapA_shape_click, handlerExpr={
+    
+    # Filter shapefile with clickEvent
+    clickVal <- input$mapA_shape_click$id
+    tempSiteDataReac <- polyPOURec() %>% subset(SiteUUID %in% clickVal)
+    CWSSVal <- tempSiteDataReac$CommunityWaterSupplySystem
+    
+    createLinePlotsAFunc(tempSiteDataReac, clickVal, CWSSVal)
+    createLinePlotsBFunc(clickVal, CWSSVal)
+    createLinePlotsCFunc(clickVal, CWSSVal)
+    createLinePlotsDFunc(clickVal, CWSSVal)
+  }) #end ObserveEvent
+  
+  
+  # Create Line Plot A Function
+  createLinePlotsAFunc <- function(tempSiteDataReac, clickVal, CWSSVal) {
+    
+    output$LP_A <- renderPlotly({
+      
+      # Plot Subset Data - Amount via VariableSpecificCV vs TimeFrameStart
+      tempAmountsDataReac <- AmountsDataReac() %>% filter(SiteUUID %in% tempSiteDataReac$SiteUUID)
+      AmountsData_v3 <- tempAmountsDataReac %>% group_by(SiteUUID, TimeFrameStart, VariableSpecificCV, AmountUnitCV) %>% summarise(SumAmount = sum(Amount))
+      
+      # Extract unit variable from table
+      unitList <- as.list(AmountsData_v3$AmountUnitCV)
+      unitString <- unitList[[1]][1]
+      
+      # Error in plotly not using lines with group_by() function.
+      AmountsData_v3 <- ungroup(AmountsData_v3)
+      
+      # The Plot
+      LP_A <- plot_ly(data=AmountsData_v3, x=~TimeFrameStart, y=~SumAmount,
+                      color=~VariableSpecificCV,
+                      type='scatter', mode='lines+markers')
+      LP_A <- LP_A %>% layout(title = paste0("WaDE Site ID: ", clickVal),
+                              paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
+                              xaxis = list(title="Report Time"),
+                              yaxis = list(title=paste0("Sum of Water Amount (", unitString, ")")),
+                              showlegend=TRUE)
+      LP_A
+    })
+    return(output)
+  }
+  
+  
+  # Create Line Plot B Function
+  createLinePlotsBFunc <- function(clickVal, CWSSVal) {
+    
+    output$LP_B <- renderPlotly({
+      
+      # Plot Subset Data - Amount via groupby SiteUUID, ReportyearCV & CommunityWaterSupplySystem
+      tempAmountsDataReac <- AmountsDataReac() %>% subset(CommunityWaterSupplySystem %in% CWSSVal)
+      AmountsData_v3 <- tempAmountsDataReac %>% group_by(CommunityWaterSupplySystem, PODorPOUSite, ReportYearCV, AmountUnitCV) %>% summarise(SumAmouts = sum(Amount))
+      
+      # Extract unit variable from table
+      unitList <- as.list(AmountsData_v3$AmountUnitCV)
+      unitString <- unitList[[1]][1]
+      
+      #The Plot
+      LP_B <- plot_ly(data=AmountsData_v3, x=~ReportYearCV, y=~SumAmouts,
+                      group=~PODorPOUSite,
+                      color=~PODorPOUSite, colors=c("POU"='red', "POD"='blue'),
+                      type='bar')
+      LP_B <- LP_B %>% layout(title = CWSSVal,
+                              xaxis = list(title="Report Year"),
+                              yaxis = list(title=paste0("Water Amount (", unitString, ")")),
+                              showlegend=TRUE)
+      LP_B
+    })
+    return(output)
+  }
+  
+  
+  # Create Line Plot C Function
+  createLinePlotsCFunc <- function(clickVal, CWSSVal) {
+    
+    output$LP_C <- renderPlotly({
+      
+      # Plot Subset Data - Amount v ReportYearCV by SiteUUID per CommunityWaterSupplySystem
+      tempAmountsData_v2 <- AmountsDataReac() %>% filter(PODorPOUSite == "POD")
+      tempAmountsData_v2 <- tempAmountsData_v2 %>% subset(CommunityWaterSupplySystem %in% CWSSVal)
+      AmountsData_v3 <- tempAmountsData_v2 %>% group_by(CommunityWaterSupplySystem, SiteUUID, ReportYearCV, AmountUnitCV) %>% summarise(SumAmouts = sum(Amount))
+      
+      # Extract unit variable from table
+      unitList <- as.list(AmountsData_v3$AmountUnitCV)
+      unitString <- unitList[[1]][1]
+      
+      # Error in plotly not using lines with group_by() function.
+      AmountsData_v3 <- ungroup(AmountsData_v3)
+      
+      #The Plot
+      LP_C <- plot_ly(data=AmountsData_v3, x=~ReportYearCV, y=~SumAmouts,
+                      color=~SiteUUID,
+                      type='scatter', mode='lines+markers')
+      LP_C <- LP_C %>% layout(title = CWSSVal,
+                              barmode = 'group',
+                              xaxis = list(title="Report Year"),
+                              yaxis = list(title=paste0("Water Amount (", unitString, ")")),
+                              showlegend=TRUE)
+      LP_C
+      
+    })
+    return(output)
+  }
+  
+  
+  # Create Line Plot D Function
+  createLinePlotsDFunc <- function(clickVal, CWSSVal) {
+    
+    output$LP_D <- renderPlotly({
+      
+      # Plot Subet Data - Amount v ReportYearCV by WaterSourceTypeCV per CommunityWaterSupplySystem
+      tempAmountsData_v2 <- AmountsDataReac() %>% filter(PODorPOUSite == "POD")
+      tempAmountsData_v2 <- tempAmountsData_v2 %>% subset(CommunityWaterSupplySystem %in% CWSSVal)
+      AmountsData_v3 <- tempAmountsData_v2 %>% group_by(CommunityWaterSupplySystem, WaterSourceTypeCV, ReportYearCV, AmountUnitCV) %>% summarise(SumAmouts = sum(Amount))
+      
+      # Extract unit variable from table
+      unitList <- as.list(AmountsData_v3$AmountUnitCV)
+      unitString <- unitList[[1]][1]
+      
+      colors <- c('#CC1480', '#FF9673', '#E1C8B4')
+      
+      # Error in plotly not using lines with group_by() function.
+      AmountsData_v3 <- ungroup(AmountsData_v3)
+      
+      #The Plot
+      LP_D <- plot_ly(data=AmountsData_v3, x=~ReportYearCV, y=~SumAmouts,
+                      color=~WaterSourceTypeCV, colors=c("Groundwater"='purple', "Surface Water"='navy', "Unspecified"='#E1C8B4'),
+                      type='scatter', mode='lines+markers')
+      LP_D <- LP_D %>% layout(title = CWSSVal,
+                              barmode = 'group',
+                              xaxis = list(title="Report Year"),
+                              yaxis = list(title=paste0("Water Amount (", unitString, ")")),
+                              showlegend=TRUE)
+      LP_D
+    })
+    return(output)
+  }
+  
+  
+  ####### End Line Plots Based on Observe Functions ########
+  ##################################################################

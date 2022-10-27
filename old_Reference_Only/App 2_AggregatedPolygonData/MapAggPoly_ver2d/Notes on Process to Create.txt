@@ -1,0 +1,73 @@
+####### Creation Processes #######
+##################################
+Steps to take to build Aggregate Data App
+
+1) Export tables from WaDE Database to csv. Tables needed: dontopen_AggLJAll.csv, dontopen_RU.csv.
+2) Pre-processes csv in Jupyter Notebook.  The goal is to combine ReportingUnits.csv with shapefiles via a custom TypeNameNum or TypeIDNum field. Export processed (p) csv.
+3) Add p-csv for reporting units into the geodatabase of ArcGIS Pro.
+4) Find shapefiles of areas of interest (state provdied) and add data into ArcGIS Pro.
+5) Add TypeNameNum (text, 255) or TypeIDNum (text, 255) fields to shp files, follow same logic as p-csv (see below).
+6) Join shapefile to p-csv via TypeNameNum or TypeIDNum field (either or, whatever fits best for shp file).  Then export shapefileJoin as new file.  Remove unwanted fields from shapefileJoin.
+7) Inspect joined shp and p-csv shapefile, look for errors.
+8) Selected wanted rows from shp, export as new shp_v? file within ArcGIS Pro.
+9) Inspect and delete unnecessary columns and rows from shp_v?.
+10) Export shp_v? to folder as shp file.  WARNING: Shp format outside ArcGIS won't maintain field names, have to manually enter them back in within R.
+
+
+####### Coding NOtes #######
+############################
+
+State Number Translation
+    "UT" : "46",
+    "NM" : "35",
+    "NE" : "41",
+    "CO" : "42",
+    "WY" : "47",
+    "CA" : "49",
+    "AZ" : "48",
+    "TX" : "37",
+    "US" : "100"
+
+--- Creating Linking IDs ---
+States County: TypeNameNum 
+CA DAUCO (County): TypeIDNum 
+UT HUC: TypeIDNum 
+WY and TX Basin:
+CA Planning Area:
+AZ Active Management Area:
+USBR UCRB Triburary:
+UT Subarea:
+CA Hydrologic Region: TypeNameNum 
+
+
+--- TypeNameNum Translation ---
+States County "1_" + !NAME! + "_" + !StateNum!
+CA DAUCO (County): use ID
+UT HUC: use ID.
+WY: "3_" + !ReportingUnitName! + "_47"
+CA Planning Area: use ID
+AZ Active Management Area: "5_" + !BASIN_NAME! + "_48"
+USBR UCRB Triburary: "6_" + !Name! + "_" + !StateNum!
+UT Subarea: "7_" + !RU_Name! + "_" + !StateNum!
+CA Hydrologic Region: "8_" + !HR_NAME! + "_49"
+
+
+--- TypeIDNum Translation ---
+States County: use name.
+CA DAUCO (County): "1_" + !RU_ID! + "_49"
+UT HUC: "2_" + !HUC_8! + "_" + !StateNum!
+WY: use name.
+TX Basin: "3_" + !RU_Name! + "_" + !StateNum!
+CA Planning Area: "4_" + !PA_NO! + "_49"
+AZ Active Management Area:
+USBR UCRB Triburary:
+UT Subarea:
+CA Hydrologic Region: use name.
+
+
+
+
+
+####### Notes #######
+#####################
+1) TypeIDNum seems to work beter, issue in CA DAUCO (county) shapefile of shapes sharing same name, but thankfully NOT the ID's.

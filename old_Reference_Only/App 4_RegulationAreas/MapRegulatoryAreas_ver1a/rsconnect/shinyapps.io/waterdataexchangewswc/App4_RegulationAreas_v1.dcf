@@ -1,0 +1,13 @@
+name: App4_RegulationAreas_v1
+title: App4_RegulationAreas_v1
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2983159
+bundleId: 3722400
+url: https://waterdataexchangewswc.shinyapps.io/App4_RegulationAreas_v1/
+when: 1602282810.34345
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: bonus code/.Rhistory|bonus code/checking tables.R|bonus code/converttablerdata.R|bonus code/PreProcessData_SiteSpecific1a.ipynb

@@ -1,2 +1,0 @@
-1) Mapdeck uses a special coloring funciton.  Still uses HEX code, but have to add a "FF" to the end of each one.
-2) Need to use library(sf) & sf::st_read() function to work with shapefiles in MapDeck.

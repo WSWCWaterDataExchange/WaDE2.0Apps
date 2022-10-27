@@ -1,0 +1,14 @@
+name: LandingPadgeDemo
+title: LandingPadgeDemo
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7334201
+bundleId: 6424814
+url: https://waterdataexchangewswc.shinyapps.io/LandingPadgeDemo/
+when: 1666300741.42179
+lastSyncTime: 1666300741.42179
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: bonus code/.ipynb_checkpoints/TestAPI-checkpoint.ipynb|bonus code/TestAPI.ipynb
