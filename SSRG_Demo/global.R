@@ -38,11 +38,18 @@ LegendImage <- "www/customLegend.jpg"
 ################################################################################################
 # Sec 3: Custom Functions, Values and Lists
 
+# Fix Sites File Inputs Issues
+sites$WaDENameWS <- as.list(strsplit(as.character(sites$WaDENameWS), ", ")) # convert to correct list format
+sites$minTimeFrameStart <- as.Date(sites$minTimeFrameStart)
+sites$maxTimeFrameEnd <- as.Date(sites$maxTimeFrameEnd)
+
+# Min Max TimeFrameValues
+minSiteTime <- min(sites$minTimeFrameStart, na.rm = TRUE)
+maxSiteTime <- max(sites$maxTimeFrameEnd, na.rm = TRUE)
+
 # Input State List
 StateList <- c("CA", "CO", "ID", "MT", "NE", "NV", "OR")
 
 # Input WaterSourceTypeCV List
 WaterSourceTypeList <- c("Surface Water", "Groundwater", "Unspecified")
 
-# Other Parameters
-clickShape <- NULL

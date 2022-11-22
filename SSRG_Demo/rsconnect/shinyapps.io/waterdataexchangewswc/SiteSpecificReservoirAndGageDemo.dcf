@@ -5,10 +5,10 @@ account: waterdataexchangewswc
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7405862
-bundleId: 6444855
+bundleId: 6504193
 url: https://waterdataexchangewswc.shinyapps.io/SiteSpecificReservoirAndGageDemo/
-when: 1666823249.97043
-lastSyncTime: 1666823249.97043
+when: 1668199812.00017
+lastSyncTime: 1668199812.00017
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: bonus code/.ipynb_checkpoints/Format_Input_Tables-checkpoint.ipynb|bonus code/converttablerdata.R|bonus code/Format_Input_Tables.ipynb|data/.Rhistory|NotEssentialData/custom images.pptx|NotEssentialData/sites.csv|NotEssentialData/Sites_v2.xlsx
+ignoredFiles: bonus code/.ipynb_checkpoints/Format_Input_Tables-checkpoint.ipynb|bonus code/converttablerdata.R|bonus code/Format_Input_Tables.ipynb|data/.Rhistory|NotEssentialData/custom images.pptx|NotEssentialData/Sites.csv|NotEssentialData/Sites_v2.xlsx|NotEssentialData/start_end_Sites.csv|ReadME.md

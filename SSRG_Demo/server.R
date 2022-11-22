@@ -8,15 +8,11 @@ server <- function(input, output, session) {
   
   ##################################################################
   ####### Reactive Data Sets ########
-
-    sitesRec <- reactive({
-    sites %>%
-      subset(
-        (State %in% input$StateInput)
-      )
-      sites[sapply(sites$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+  
+  sitesRec <- reactive({
+    sites
   })
-
+  
   
   
   ##################################################################
@@ -67,7 +63,10 @@ server <- function(input, output, session) {
       # Subset of sitesRec() data, with custom mapping options.
       siteDataTable <- sitesRec()
       if (input$NoRecordInput == TRUE) {siteDataTable <- siteDataTable %>% subset(CountVar > 0)}
-      siteDataTable$siteLabel  <- paste(siteDataTable$SiteNativeID, " : ", siteDataTable$CommunityWaterSupplySystem)
+      siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+      siteDataTable <- siteDataTable %>% subset((State %in% input$StateInput))
+      siteDataTable <- siteDataTable %>% filter(minTimeFrameStart >= input$sliderInput[1], maxTimeFrameEnd <= input$sliderInput[2], na.rm = TRUE)
+      siteDataTable$siteLabel  <- siteDataTable$SiteNativeID
       siteDataTable$markColor <- ifelse(siteDataTable$WaDENameWS == "Surface Water", "Navy", ifelse(siteDataTable$WaDENameWS == "Groundwater", "Purple", "#BFBFBF"))
       
       # Call the Map
@@ -98,10 +97,13 @@ server <- function(input, output, session) {
             "<b>Site Name:</b>", siteDataTable$SiteName, "<br>",
             "<b>Site Type:</b>", siteDataTable$WaDENameS, "<br>",
             "<b>Water Source Type:</b>", siteDataTable$WaDENameWS, "<br>",
-            "<b>Community Water Supply System:</b>", siteDataTable$CommunityWaterSupplySystem, "<br>",
+            "<b>Time Step:</b>", siteDataTable$AggregationIntervalUnitCV, "<br>",
+            "<b>Min Time Frame:</b>", siteDataTable$minTimeFrameStart, "<br>",
+            "<b>Max Time Frame:</b>", siteDataTable$maxTimeFrameEnd, "<br>",
             "<b>Varaible Type:</b>", siteDataTable$VariableCV, "<br>",
-            "<b>Additional Info:</b>", paste0('<a href = "https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', siteDataTable$SiteUUID, '"> Link </a>'), "<br>"))
+            "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', siteDataTable$SiteUUID, '", target=\"_blank\"> Link </a>'))
+        )
     }) #end try
   }) #end Observe
-
+  
 } #endServer

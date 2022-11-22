@@ -1,0 +1,14 @@
+name: AggregatedBudgetLandingPadgeDemo
+title: AggregatedBudgetLandingPadgeDemo
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7566060
+bundleId: 6490917
+url: https://waterdataexchangewswc.shinyapps.io/AggregatedBudgetLandingPadgeDemo/
+when: 1667943394.33444
+lastSyncTime: 1667943394.33444
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: bonus code/.ipynb_checkpoints/TestAPI-checkpoint.ipynb|bonus code/TestAPI.ipynb

@@ -17,6 +17,7 @@ library(curl)  # Drop-in replacement for base url that supports https, ftps, gzi
 library(rJava) # Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
 library(leaflet) # Map making. Leaflet is more supported for shiny.
 library(plotly) # To create plots within the output for the app.
+library(sf) # how to work & convert data into shapefile info. 
 
 
 ################################################################################################
@@ -26,7 +27,7 @@ library(plotly) # To create plots within the output for the app.
 
 titleWSWC <- tags$a(href='https://www.westernstateswater.org/',
                     tags$img(src='wswclogo.jpg', height=70, width=50),
-                    "landing page demo")
+                    "Site Specific Landing Page Demo")
 
 
 
@@ -35,6 +36,7 @@ titleWSWC <- tags$a(href='https://www.westernstateswater.org/',
 # Sec 3. The UI (HTML Page)
 
 ui <- dashboardPage(
+  title = "Site-Specific Landing Page Demo",
   skin = "black",
   
   dashboardHeader(
@@ -46,7 +48,7 @@ ui <- dashboardPage(
   
   dashboardBody(
     
-    # SiteUUId and Download Box
+    # SiteUUID and Download Box
     fluidRow(
       # Check SiteUUID Input
       box(title = h5(strong("Query Parameter (SiteUUID)"), align = "center"), width = 10,
@@ -54,7 +56,7 @@ ui <- dashboardPage(
       ),
       # Download Option
       box(width = 2,
-          downloadButton("Download Data", "downloadExcel")
+          downloadButton("downloadDataOuput", "Download Data")
       )
     ),#end fluidRow
     
@@ -79,11 +81,11 @@ ui <- dashboardPage(
       box(title = "Site Information", status = "primary", solidHeader = TRUE, width = 3,
           p(strong("WaDE Site ID: ")), textOutput("WaDESiteID"), br(),
           p(strong("Site Native ID: ")), textOutput("SiteNativeID"), br(),
-          p(strong("Site Name: ")), textOutput("SiteName"), br(),
+          p(strong("Site Name: ")), span(textOutput("SiteName"), style="color:red"), br(),
           p(strong("Longitude: ")), textOutput("Longitude"), br(),
           p(strong("Latitude: ")), textOutput("Latitude"), br(),
           p(strong("County: ")), textOutput("County"), br(),
-          p(strong("Site Type: ")), textOutput("SiteType"), br(),
+          p(strong("Site Type: ")),  span(textOutput("SiteType"), style="color:red"), br(),
           p(strong("POD or POU: ")), textOutput("PODorPOU")
       ),
       
@@ -99,7 +101,9 @@ ui <- dashboardPage(
       tabBox(title = "Table Info", width = 12, side='left', selected = "Variable Specifics Info",
              tabPanel("Variable Specifics Info",  dataTableOutput("Variable")),
              tabPanel("Site Specific Amount Info",  dataTableOutput("SiteSpecificAmount")),
-             tabPanel("Water Source Info",  dataTableOutput("WaterSources"))
+             tabPanel("Water Source Info",  dataTableOutput("WaterSources")),
+             tabPanel("Related POD Sites Info",  dataTableOutput("RelatedPODSites")),
+             tabPanel("Related POU Sites Info",  dataTableOutput("RelatedPOUSites"))
       )
     ), #end fluidRow
     

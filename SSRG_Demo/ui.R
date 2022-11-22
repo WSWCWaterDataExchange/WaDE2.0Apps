@@ -5,9 +5,10 @@
 # Sec 2. The UI (HTML Page)
 
 ui <- dashboardPage(
+  title = "SS Reservoir and Gage Dashboard Demo",
   
   dashboardHeader(
-    title = "WSWC Dashboard"
+    title = "SS Reservoir and Gage Dashboard Demo"
   ), #end dashboardHeader
   
   
@@ -17,7 +18,8 @@ ui <- dashboardPage(
     hr(),
     materialSwitch(inputId="NoRecordInput", label="Hide No Record (Grey) Sites?", value=FALSE, status="warning"),
     pickerInput(inputId='StateInput', label='Select State', choices=StateList, selected=StateList, multiple=TRUE),
-    pickerInput(inputId="WaterSourceTypeInput", label="Select Water Source Type", choices=WaterSourceTypeList, selected=WaterSourceTypeList, multiple=TRUE)
+    pickerInput(inputId="WaterSourceTypeInput", label="Select Water Source Type", choices=WaterSourceTypeList, selected=WaterSourceTypeList, multiple=TRUE),
+    sliderInput("sliderInput", label = h3("Min Max Time"), min = minSiteTime, max = maxSiteTime, value = c(minSiteTime, maxSiteTime))
   ), # end dashboardSidebar
   
   dashboardBody(

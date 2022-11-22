@@ -2,7 +2,7 @@
 library(rio)
 library(readr)
 library(readxl)
-setwd("C:\\Users\\rjame\\Documents\\WSWC Documents\\WaDE Side Projects Local\\20221017 Rshiny SS Demo\\SSRGDemo\\data")
+setwd("C:\\Users\\rjame\\Documents\\WSWC Documents\\WaDE Side Projects Local\\20221017 Rshiny SS Demo\\SSRG_Demo\\data")
 
 #Sites_v
 Sites_v2 <- read_excel("Sites_v2.xlsx")

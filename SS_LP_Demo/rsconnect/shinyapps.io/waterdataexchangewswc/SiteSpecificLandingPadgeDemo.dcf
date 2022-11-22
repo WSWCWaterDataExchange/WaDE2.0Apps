@@ -5,10 +5,10 @@ account: waterdataexchangewswc
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7432799
-bundleId: 6444731
+bundleId: 6495379
 url: https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo/
-when: 1666821089.28046
-lastSyncTime: 1666821089.28146
+when: 1668022378.60346
+lastSyncTime: 1668022378.60346
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: bonus code/.ipynb_checkpoints/TestAPI-checkpoint.ipynb|bonus code/TestAPI.ipynb
+ignoredFiles: bonus code/.ipynb_checkpoints/TestAPI-checkpoint.ipynb|bonus code/test_API.R|bonus code/TestAPI.ipynb|ReadME.md

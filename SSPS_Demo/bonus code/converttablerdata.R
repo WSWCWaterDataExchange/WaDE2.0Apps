@@ -2,34 +2,58 @@
 library(rio)
 library(readr)
 library(readxl)
-setwd("C:\\Users\\rjame\\Documents\\WSWC Documents\\WaDE Side Projects\\20220112 Site Specific RShiny Demo\\SS Demo\\data")
+setwd("C:\\Users\\rjame\\Documents\\WSWC Documents\\WaDE Side Projects Local\\20221017 Rshiny SS Demo\\SSPS_Demo\\data")
 
-#SiteVariableAmounts_fact
-SiteVariableAmounts <- read_csv("SiteVariableAmounts.csv")
-export(SiteVariableAmounts, "SiteVariableAmounts.RData")
+#Sites_v2_sites
+Sites_v2_sites <- read_excel("Sites_v2_sites.xlsx")
+export(Sites_v2_sites, "Sites_v2_sites.RData")
 
-#Sites_v2_POD
-Sites_v2_POD <- read_excel("Sites_v2_POD.xlsx")
-export(Sites_v2_POD, "Sites_v2_POD.RData")
+# #Sites_v2_poly
+# Sites_v2_poly <- read_excel("Sites_v2_poly.xlsx")
+# export(Sites_v2_poly, "Sites_v2_poly.RData")
 
 
 
-# 
-# Point_ID = c("A1", "B1", "C3")
-# Latitude = c(38.05, 39.08, 40.05)
-# Longitude = c(-107.00, -107.05, -108.00)
-# PointUse = I(list("farm", c("farm", "house"), "house"))  # <- the column with the list entries
-# Map_DF <- data.frame(Point_ID, Latitude, Longitude, PointUse)
-# View(Map_DF$PointUse)
-# 
-# x <- "a,b,c"
-# xlist <- as.list(strsplit(x, ",")[[1]])
-# 
-# 
-# # Input Data: Shapefiles
-# library(rgdal)  # To work with shapefiles.
-# setwd("C:\\Users\\rjame\\Documents\\WSWC Documents\\WaDE Side Projects\\20220112 CA TX ss RShiny Demo\\CA_TX_ssDemo")
-# SitesDataSF <- readOGR(dsn="data", layer="CA_TX_PWS", stringsAsFactors=FALSE) # Polygon Site info
-# #SitesDataSF@data$WaDENameWS <- as.list(strsplit(SitesDataSF@data$WaDENameWS, "Surface")[[1]])  # convert Characters to List
-# View(SitesDataSF@data$WaDENameWS)
 
+
+# App: SSPS Demo
+# Date: 10/31/2022
+# Purpose: To view site specific public supply water use time series data.
+
+################################################################################################
+################################################################################################
+# Sec 2: Libraries & Input Files
+
+# Libraries
+library(shiny) # How we create the app.
+library(shinycssloaders) # Adds spinner icon to loading outputs.
+library(shinydashboard) # The layout used for the ui page.
+library(shinyWidgets) # more options to work with shiny, like inputs
+library(leaflet) # Map making. Leaflet is more supported for shiny.
+library(leaflet.extras)
+library(leaflegend) # custom legend functions for leaflet
+library(leafem) #leaflet extension.
+library(dplyr) # Used to filter data for plots.
+library(DT) # Used to create more efficient data table output.
+library(rio) # To import RData table from external source
+library(rgdal)  # To work with shapefiles.
+library(sp) # Uses SpatialPointsDataFrame function.
+library(RColorBrewer) # adds more color schema options.
+library(viridis) # adds more color schema options.
+library(plotly) # To create plots within the output for the app.
+library(jsonlite)
+library(tidyverse)
+
+
+# Input Data Files
+sitesFile <- import("../data/Sites_v2_sites.RData")  # POD Site CSV Table
+polyFile <- readOGR(dsn="data", layer="Sites_v2_poly", stringsAsFactors=FALSE)  # POU Polygon Shapefile
+linkFile <- import("../data/start_end_Sites.RData")  # Create links between PODs and POUs
+
+
+sitesFile$WaDENameWS <- as.list(strsplit(as.character(sitesFile$WaDENameWS), ", ")) # convert to correct list format
+
+WaterSourceTypeList <- c("Surface Water")
+
+
+xtest <- sitesFile[sapply(sitesFile$WaDENameWS, function(p) {any(p %in% WaterSourceTypeList)}), ]

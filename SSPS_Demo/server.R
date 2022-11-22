@@ -9,28 +9,17 @@ server <- function(input, output, session) {
   ##################################################################
   ####### Reactive Data Sets ########
   
-  AmountsDataReac <- reactive({
-    amountData
+  # note: filters working better when building a subset below with single values & vectors
+  sitesRec <- reactive({
+    sitesFile
   })
   
-  sitesPODRec <- reactive({
-    sitesPOD %>%
-      subset(
-        (State %in% input$StateInput)
-      )
-    sitesPOD[sapply(sitesPOD$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+  polyRec <- reactive({
+    polyFile
   })
   
-  polyPOURec <- reactive({
-    polyPOU %>%
-      subset(
-        (State %in% input$StateInput)
-      )
-    polyPOU[sapply(polyPOU@data$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
-  })
-
-
-
+  
+  
   ##################################################################
   ######## Site Specific Map ########
   
@@ -76,17 +65,24 @@ server <- function(input, output, session) {
   observe({
     try({
       
-      # Subset of polyPOURec() data, with custom mapping options.
-      polyDataTable <- polyPOURec()
+      # Subset of polyRec() data, with custom mapping options.
+      polyDataTable <- polyRec()
       if (input$NoRecordInput == TRUE) {polyDataTable <- polyDataTable %>% subset(CountVar > 0)}
+      polyDataTable <- polyDataTable[sapply(polyDataTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+      polyDataTable <- polyDataTable %>% subset((State %in% input$StateInput))
+      polyDataTable <- polyDataTable %>% subset(minTimeFrameStart >= input$sliderInput[1])
+      polyDataTable <- polyDataTable %>% subset(maxTimeFrameEnd <= input$sliderInput[2])
       polyDataTable$polyOpacity  <- ifelse(polyDataTable$CountVar > 0, 0.1, 1.0)
-      polyDataTable$polylabel  <- paste(polyDataTable$SiteNativeID, " : ", polyDataTable$CommunityWaterSupplySystem)
-      
-      # Subset of sitesPODRec() data, with custom mapping options.
-      siteDataTable <- sitesPODRec()
+      polyDataTable$polylabel  <- polyDataTable$SiteNativeID
+
+      # Subset of sitesRec() data, with custom mapping options.
+      siteDataTable <- sitesRec()
       if (input$NoRecordInput == TRUE) {siteDataTable <- siteDataTable %>% subset(CountVar > 0)}
-      siteDataTable$siteLabel  <- paste(siteDataTable$SiteNativeID, " : ", siteDataTable$CommunityWaterSupplySystem)
-      
+      siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+      siteDataTable <- siteDataTable %>% subset((State %in% input$StateInput))
+      siteDataTable <- siteDataTable %>% filter(minTimeFrameStart >= input$sliderInput[1], maxTimeFrameEnd <= input$sliderInput[2], na.rm = TRUE)
+      siteDataTable$siteLabel  <- siteDataTable$SiteNativeID
+     
       # Color Scale for Map
       pal <- colorNumeric(palette=colorList, domain=binList)
       
@@ -96,7 +92,7 @@ server <- function(input, output, session) {
         # Clean Map
         clearGroup(group=c("PODSite_A", "SitePoly_A")) %>%
         
-        # Add POU Polygons
+        # Add Polygons
         addPolygons(
           data = polyDataTable,
           layerId = ~SiteUUID,
@@ -121,12 +117,14 @@ server <- function(input, output, session) {
             "<b>Site Name:</b>", polyDataTable$SiteName, "<br>",
             "<b>Site Type:</b>", polyDataTable$WaDENameS, "<br>",
             "<b>Water Source Type:</b>", polyDataTable$WaDENameWS, "<br>",
-            "<b>Community Water Supply System:</b>", polyDataTable$CommunityWaterSupplySystem, "<br>",
+            "<b>Time Step:</b>", polyDataTable$AggregationIntervalUnitCV, "<br>",
+            "<b>Min Time Frame:</b>", polyDataTable$minTimeFrameStart, "<br>",
+            "<b>Max Time Frame:</b>", polyDataTable$maxTimeFrameEnd, "<br>",
             "<b>Varaible Type:</b>", polyDataTable$VariableCV, "<br>",
-            "<b>Additional Info:</b>", paste0('<a href = "https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', polyDataTable$SiteUUID, '"> Link </a>'), "<br>")
-          ) %>%
+            "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', polyDataTable$SiteUUID, '", target=\"_blank\"> Link </a>'))
+        ) %>%
         
-        # Add POD Sites
+        # Add Sites
         addCircleMarkers(
           data = siteDataTable,
           layerId = ~SiteUUID,
@@ -146,9 +144,12 @@ server <- function(input, output, session) {
             "<b>Site Name:</b>", siteDataTable$SiteName, "<br>",
             "<b>Site Type:</b>", siteDataTable$WaDENameS, "<br>",
             "<b>Water Source Type:</b>", siteDataTable$WaDENameWS, "<br>",
-            "<b>Community Water Supply System:</b>", siteDataTable$CommunityWaterSupplySystem, "<br>",
+            "<b>Time Step:</b>", siteDataTable$AggregationIntervalUnitCV, "<br>",
+            "<b>Min Time Frame:</b>", siteDataTable$minTimeFrameStart, "<br>",
+            "<b>Max Time Frame:</b>", siteDataTable$maxTimeFrameEnd, "<br>",
             "<b>Varaible Type:</b>", siteDataTable$VariableCV, "<br>",
-          "<b>Additional Info:</b>", paste0('<a href = "https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', siteDataTable$SiteUUID, '"> Link </a>'), "<br>"))
+            "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', siteDataTable$SiteUUID, '", target=\"_blank\"> Link </a>'))
+        )
     }) #end try
   }) #end Observe
   
@@ -157,10 +158,8 @@ server <- function(input, output, session) {
   observeEvent(eventExpr=input$mapA_shape_click, handlerExpr={
     try({
       clickVal <- input$mapA_shape_click$id
-      tempSiteDataReac <- polyPOURec() %>% subset(SiteUUID %in% clickVal)
-      CWSSVal <- tempSiteDataReac$CommunityWaterSupplySystem
-      if (CWSSVal == "NULL") {CWSSVal <- ""} # prevents NULL sites from being highlighted / created.
-      createHeighlightMapFunc(clickVal, CWSSVal)
+      if (clickVal == "NULL") {clickVal <- ""} # prevents NULL sites from being highlighted / created.
+      createHeighlightMapFunc(clickVal)
     }) #end try
   }) #end ObserveEvent
   
@@ -169,29 +168,17 @@ server <- function(input, output, session) {
   observeEvent(eventExpr=input$mapA_marker_click, handlerExpr={
     try({
       clickVal <- input$mapA_marker_click$id
-      tempSiteData_v2 <- sitesPODRec() %>% subset(SiteUUID %in% clickVal)
-      CWSSVal <- tempSiteData_v2$CommunityWaterSupplySystem
-      if (CWSSVal == "NULL") {CWSSVal <- ""} # prevents NULL sites from being highlighted / created.
-      createHeighlightMapFunc(clickVal, CWSSVal)
+      if (clickVal == "NULL") {clickVal <- ""} # prevents NULL sites from being highlighted / created.
+      createHeighlightMapFunc(clickVal)
     }) #end try
   }) #end ObserveEvent
   
   
   # Create Heighlight Area and Points Function
-  createHeighlightMapFunc <- function(clickVal, CWSSVal) {
+  createHeighlightMapFunc <- function(clickVal) {
     
     # # Subset of LinksSF data that = CWSSVal.
-    # LinksSF <- LinksSF %>% subset(CommunityWaterSupplySystem %in% CWSSVal)
-    
-    # Subset of polyPOURec() data, with custom mapping options.
-    polydatatable <- polyPOURec()
-    polydatatable <- polydatatable %>% subset(CommunityWaterSupplySystem %in% CWSSVal)
-    if (input$NoRecordInput == TRUE) {polydatatable <- polydatatable %>% subset(RecordCheck == 1)}
-    
-    # Subset of sitesPODRec() data, with custom mapping options.
-    sitedatatable <- sitesPODRec()
-    sitedatatable <- sitedatatable %>% subset(CommunityWaterSupplySystem %in% CWSSVal)
-    if (input$NoRecordInput == TRUE) {sitedatatable <- sitedatatable %>% subset(RecordCheck == 1)}
+    linkTable <- linkFile %>% subset(SiteUUID %in% clickVal)
     
     # Call the Map
     SiteMapProxy = leafletProxy(mapId="mapA") %>%
@@ -199,36 +186,14 @@ server <- function(input, output, session) {
       # Clean Map
       clearGroup(group=c("LinkToSites", "HighlightPoly", "HighlightSite")) %>%
       
-      # # Add Linkss between POUs-to-PODs
-      # addPolygons(
-      #   data = LinksSF,
-      #   # layerId = ~LinkID,
-      #   color = "Yellow",
-      #   weight = 0.5,
-      #   opacity = 1.0,
-      #   fillOpacity = 0,
-      #   group = "LinkToSites",
-      #   options = pathOptions(clickable = FALSE)) %>%
-    
-    # Add POU Polygons
-    addPolygons(
-      data = polydatatable,
-      # layerId = ~SiteUUID,
-      color = "Yellow",
-      opacity = 0.1,
-      group = "HighlightPoly",
-      options = pathOptions(clickable = FALSE)) %>%
-      
-      # Add POD Sites
-      addCircleMarkers(
-        data = sitedatatable,
-        # layerId = ~SiteUUID,
-        lng = ~Longitude,
-        lat = ~Latitude,
-        radius = 4,
+      # Add Linkss between POUs-to-PODs
+      addPolygons(
+        data = linkTable,
         color = "Yellow",
-        opacity = 0.2,
-        group = "HighlightSite",
+        weight = 0.5,
+        opacity = 1.0,
+        fillOpacity = 0,
+        group = "LinkToSites",
         options = pathOptions(clickable = FALSE))
     
     return(SiteMapProxy)
