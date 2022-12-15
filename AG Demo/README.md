@@ -1,13 +1,14 @@
 # WaDE2.0 Aggreated Budget Demo App
 ![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png) 'DISCLAIMER: These tool are under construction, will likely change over time, not for public use, and has not yet been fully approved by our member states.'
 
-This folder holds the files used to create the Aggreated Budget Demo App used for viewing data and guiding the design process of WaDE and WestDAAT.
+This folder holds the files used to create the **Aggreated Budget Demo App** used for viewing data and guiding the design process of WaDE and WestDAAT.
 
 Link to Demo app hosted on shiny.io: https://waterdataexchangewswc.shinyapps.io/AggregatedBudgetWaterUseDemo/
 
-# Missing Data
-The following CA custom areas do not have any provdied timeseries information.
+## Missing Data
+Below is a list of data that we were unable to fit onto the demo app.
 
+The following CA custom areas do not have any provdied timeseries information.
 Name | Native ID
 ---- | ----
 South Bay Peninsula | DAU04338
