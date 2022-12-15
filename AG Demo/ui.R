@@ -16,10 +16,13 @@ ui <- dashboardPage(
     HTML("<h3 style='text-align:center'; class='parallax'>Instructions</h3>
          <p style='text-align:left'; class='parallax_description'>Use filters to narrow down selection if desired.</p>"),
     hr(),
-    materialSwitch(inputId="NoRecordInput", label="Hide No Record (Grey) Sites?", value=FALSE, status="warning"),
     pickerInput(inputId='StateInput', label='Select State', choices=StateList, selected=StateList, multiple=TRUE),
     pickerInput(inputId='ReportingUnitTypeInput', label='Select Reporting Area Type', choices=ReportingUnitTypeList, selected=ReportingUnitTypeList, multiple=TRUE),
     pickerInput(inputId="WaterSourceTypeInput", label="Select Water Source Type", choices=WaterSourceTypeList, selected=WaterSourceTypeList, multiple=TRUE),
+    pickerInput(inputId="BenUseInput", label="Select Beneficial Use Type", choices=BenUseList, selected=BenUseList, multiple=TRUE),
+    pickerInput(inputId="VariableCVInput", label="Select Variable Data Type", choices=VariableCVList, selected=VariableCVList, multiple=TRUE),
+    pickerInput(inputId="TimeStepInput", label="Select Time Step Type", choices=TimeStepList, selected=TimeStepList, multiple=TRUE),
+    sliderInput("ReportYearSliderInput", label = h3("Min & Max Time"), min = minSiteTime, max = maxSiteTime, value = c(minSiteTime, maxSiteTime)),
     hr(),
     actionButton(inputId="ApplyChangesInput", label="Apply Changes", icon=icon("arrow-right"), width='90%')
     ), # end dashboardSidebar

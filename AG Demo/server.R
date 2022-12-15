@@ -9,13 +9,8 @@ server <- function(input, output, session) {
   ##################################################################
   ####### Reactive Data Sets ########
 
-  ReportingUnitRec <- eventReactive(input$ApplyChangesInput, {
-    ReportingUnitData[sapply(ReportingUnitData@data$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
-    # ReportingUnitData[sapply(ReportingUnitData@data$WaDENameBU, function(p) {any(input$BeneficialUseInput %in% p)}), ]
-    ReportingUnitData %>%
-      subset(
-        (State %in% input$StateInput) & (WaDENameRU %in% input$ReportingUnitTypeInput)
-      )
+  ReportingUnitRec <- reactive({
+    ReportingUnitData
   })
   
   
@@ -29,10 +24,9 @@ server <- function(input, output, session) {
     # Subset of ReportingUnitData data, with custom mapping options.
     ReportingUnitDataTable <- ReportingUnitData
     ReportingUnitDataTable$polylabel <- paste(ReportingUnitDataTable$State, " : ", ReportingUnitDataTable$WaDENameRU, " : ", ReportingUnitDataTable$ReportingUnitName)
-    if (input$NoRecordInput == TRUE) {ReportingUnitDataTable <- ReportingUnitDataTable %>% subset(CountVar > 0)}
     
-    # Color Scale for Map
-    binpal <- colorFactor("RdYlBu", ReportingUnitDataTable$WaDENameRU)
+    # # Color Scale for Map
+    # binpal <- colorFactor("RdYlBu", ReportingUnitDataTable$WaDENameRU)
     
     # Create the Base Map
     AgMap = leaflet(options = leafletOptions(preferCanvas = TRUE)) %>%
@@ -57,6 +51,15 @@ server <- function(input, output, session) {
       # Set starting view / zoom level
       setView(lng = -98.0, lat = 35.0, zoom = 5) %>%
       
+      # Legend - using an image.
+      addLegendImage(
+        images = LegendImage,
+        labels = "",
+        width = 220,
+        height = 200,
+        position = 'bottomright',
+        orientation = 'horizontal') %>%
+      
       # Clean Map
       clearGroup(group=c("AgPoly_A")) %>%
       
@@ -69,7 +72,8 @@ server <- function(input, output, session) {
         weight = 1,
         opacity = 0.5,
         fill = TRUE,
-        fillColor = ~binpal(WaDENameRU),
+        # fillColor = ~binpal(WaDENameRU),
+        fillColor = ~polyColor,
         fillOpacity = 0.5,
         label = ~polylabel,
         group = "AgPoly_A",
@@ -86,22 +90,30 @@ server <- function(input, output, session) {
           "<b>Area Type:</b>", ReportingUnitDataTable$WaDENameRU, "<br>",
           "<b>Water Source Type:</b>", ReportingUnitDataTable$WaDENameWS, "<br>",
           "<b>Varaible Type:</b>", ReportingUnitDataTable$VariableCV, "<br>",
+          "<b>Time Step:</b>", ReportingUnitDataTable$TimeStep, "<br>",
+          "<b>Min Time Frame:</b>", ReportingUnitDataTable$minTimeFrameStart, "<br>",
+          "<b>Max Time Frame:</b>", ReportingUnitDataTable$maxTimeFrameEnd, "<br>",
           "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/AggregatedBudgetLandingPadgeDemo?SQPInput=', ReportingUnitDataTable$ReportingUnitUUID, '", target=\"_blank\"> Link </a>'))
       )
   }) #end renderLeaflet
   
   
   #Incremental Changes to the Map / Responses to filters
-  observe({
+  # observe({
+  observeEvent(input$ApplyChangesInput, {
     try({
 
       # Subset of ReportingUnitRec() data, with custom mapping options.
       ReportingUnitDataTable <- ReportingUnitRec()
+      ReportingUnitDataTable <- ReportingUnitDataTable %>% subset(State %in% input$StateInput)
+      ReportingUnitDataTable <- ReportingUnitDataTable %>% subset(WaDENameRU %in% input$ReportingUnitTypeInput)
+      ReportingUnitDataTable <- ReportingUnitDataTable[sapply(ReportingUnitDataTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+      ReportingUnitDataTable <- ReportingUnitDataTable[sapply(ReportingUnitDataTable$WaDENameBU, function(p) {any(input$BenUseInput %in% p)}), ]
+      ReportingUnitDataTable <- ReportingUnitDataTable[sapply(ReportingUnitDataTable$WaDENameV, function(p) {any(input$VariableCVInput %in% p)}), ]
+      ReportingUnitDataTable <- ReportingUnitDataTable[sapply(ReportingUnitDataTable$TimeStep, function(p) {any(input$TimeStepInput %in% p)}), ]
+      ReportingUnitDataTable <- ReportingUnitDataTable %>% subset(minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart))
+      ReportingUnitDataTable <- ReportingUnitDataTable %>% subset(maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd))
       ReportingUnitDataTable$polylabel <- paste(ReportingUnitDataTable$State, " : ", ReportingUnitDataTable$WaDENameRU, " : ", ReportingUnitDataTable$ReportingUnitName)
-      if (input$NoRecordInput == TRUE) {ReportingUnitDataTable <- ReportingUnitDataTable %>% subset(CountVar > 0)}
-
-      # Color Scale for Map
-      binpal <- colorFactor("RdYlBu", ReportingUnitDataTable$WaDENameRU)
 
       # Call the Map
       AgMapProxy = leafletProxy(mapId="mapA") %>%
@@ -118,7 +130,8 @@ server <- function(input, output, session) {
           weight = 1,
           opacity = 0.5,
           fill = TRUE,
-          fillColor = ~binpal(WaDENameRU),
+          # fillColor = ~binpal(WaDENameRU),
+          fillColor = ~polyColor,
           fillOpacity = 0.5,
           label = ~polylabel,
           group = "AgPoly_A",
@@ -135,6 +148,9 @@ server <- function(input, output, session) {
             "<b>Area Type:</b>", ReportingUnitDataTable$WaDENameRU, "<br>",
             "<b>Water Source Type:</b>", ReportingUnitDataTable$WaDENameWS, "<br>",
             "<b>Varaible Type:</b>", ReportingUnitDataTable$VariableCV, "<br>",
+            "<b>Time Step:</b>", ReportingUnitDataTable$TimeStep, "<br>",
+            "<b>Min Time Frame:</b>", ReportingUnitDataTable$minTimeFrameStart, "<br>",
+            "<b>Max Time Frame:</b>", ReportingUnitDataTable$maxTimeFrameEnd, "<br>",
             "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/AggregatedBudgetLandingPadgeDemo?SQPInput=', ReportingUnitDataTable$ReportingUnitUUID, '", target=\"_blank\"> Link </a>'))
         )
 
