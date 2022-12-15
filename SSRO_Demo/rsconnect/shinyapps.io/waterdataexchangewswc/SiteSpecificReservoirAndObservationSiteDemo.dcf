@@ -1,0 +1,14 @@
+name: SiteSpecificReservoirAndObservationSiteDemo
+title: SiteSpecificReservoirAndObservationSiteDemo
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7821802
+bundleId: 6617461
+url: https://waterdataexchangewswc.shinyapps.io/SiteSpecificReservoirAndObservationSiteDemo/
+when: 1670618667.39655
+lastSyncTime: 1670618667.39655
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: bonus code/.ipynb_checkpoints/Format_Input_Tables-checkpoint.ipynb|bonus code/converttablerdata.R|bonus code/Format_Input_Tables.ipynb|data/.Rhistory|NotEssentialData/custom images.pptx|NotEssentialData/Sites.csv|NotEssentialData/Sites_v2.xlsx|NotEssentialData/start_end_Sites.csv|ReadME.md

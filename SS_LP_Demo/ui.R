@@ -17,7 +17,7 @@ library(curl)  # Drop-in replacement for base url that supports https, ftps, gzi
 library(rJava) # Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
 library(leaflet) # Map making. Leaflet is more supported for shiny.
 library(plotly) # To create plots within the output for the app.
-library(sf) # how to work & convert data into shapefile info. 
+library(sf) # how to work & convert data into shapefile info.
 
 
 ################################################################################################

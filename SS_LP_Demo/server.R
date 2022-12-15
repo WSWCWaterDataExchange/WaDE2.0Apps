@@ -96,11 +96,11 @@ server <- function(input, output, session) {
     #site
     output$WaDESiteID <- renderText(SiteFunc()[['SiteUUID']])
     output$SiteNativeID <- renderText(SiteFunc()[['NativeSiteID']])
-    output$SiteName <- renderText("Review API return") # output$SiteName <- renderText(SiteFunc()[[1]])
+    output$SiteName <- renderText("TBD, API Bug") # output$SiteName <- renderText(SiteFunc()[[1]])
     output$Longitude <- renderText(SiteFunc()[['Longitude']])
     output$Latitude <- renderText(SiteFunc()[['Latitude']])
     output$County <- renderText(SiteFunc()[['County']])
-    output$SiteType <- renderText("Review API return") # output$SiteType <-renderText(SiteFunc()[[1]])
+    output$SiteType <- renderText("TBD, API Bug") # output$SiteType <-renderText(SiteFunc()[[1]])
     output$PODorPOU <- renderText(SiteFunc()[['PODorPOUSite']])
     
     #variable
@@ -302,20 +302,32 @@ server <- function(input, output, session) {
   createLinePlotsAFunc <- function(SiteSpecificAmount) {
     output$LP_A <- renderPlotly({
       # Plot Subset Data - Amount via VariableSpecificCV vs TimeFrameStart
-      AmountsData_v3 <- SiteSpecificAmount %>% group_by(SiteUUID, TimeframeStart, VariableSpecificTypeCV, Amount) %>% summarise(SumAmount = sum(Amount))
       
-      # Error in plotly not using lines with group_by() function.
-      AmountsData_v3 <- ungroup(AmountsData_v3)
+      # AmountsData_v3 <- SiteSpecificAmount %>% group_by(SiteUUID, TimeframeStart, VariableSpecificTypeCV, Amount) %>% summarise(SumAmount = sum(Amount))
+      # AmountsData_v3$TimeframeStart <- as.Date(AmountsData_v3$TimeframeStart)
+      # SiteUUIDstring <- unique(AmountsData_v3$SiteUUID)
+      # AmountsData_v3 <- ungroup(AmountsData_v3) # Error in plotly not using lines with group_by() function.
       
+      # temp fix for VariableSpecificTypeCV API issue
+      library(rio)
+      variableCVFile <- import("data/variableCV.csv")  # POD Site Table
+      SiteSpecificAmount <- merge(x=SiteSpecificAmount, y=variableCVFile, by="VariableSpecificTypeCV",all.x=TRUE)
+      AmountsData_v3 <- SiteSpecificAmount %>% group_by(SiteUUID, TimeframeStart, VariableSpecificCV, Amount) %>% summarise(SumAmount = sum(Amount))
+      AmountsData_v3$TimeframeStart <- as.Date(AmountsData_v3$TimeframeStart)
+      SiteUUIDstring <- unique(AmountsData_v3$SiteUUID)
+      AmountsData_v3 <- ungroup(AmountsData_v3) # Error in plotly not using lines with group_by() function.
+  
       # The Plot
       LP_A <- plot_ly(data=AmountsData_v3, x=~TimeframeStart, y=~SumAmount,
-                      color=~VariableSpecificTypeCV,
+                      # color=~VariableSpecificTypeCV, # temp fix
+                      color=~VariableSpecificCV,
                       type='scatter', mode='lines+markers')
-      LP_A <- LP_A %>% layout(title="WaDE Site ID: xxx",
+      LP_A <- LP_A %>% layout(title=paste0("WaDE Site ID: ", SiteUUIDstring),
                               paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
                               xaxis = list(title="Report Time"),
                               yaxis = list(title="Sum of Water Amount"),
-                              legend = list(title=list(text='<b>VariableSpecificTypeCV</b>')),
+                              # legend = list(title=list(text='<b>VariableSpecificTypeCV</b>')), #temp fix
+                              legend = list(title=list(text='<b>VariableSpecificCV</b>')),
                               showlegend=TRUE)
       LP_A
     })

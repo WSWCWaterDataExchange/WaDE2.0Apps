@@ -1,5 +1,5 @@
 # App: SSPS Demo
-# Date: 11/17/2022
+# Date: 12/05/2022
 # Purpose: To view site specific public supply water use time series data.
 
 ################################################################################################
@@ -46,20 +46,35 @@ LegendImage <- "www/customLegend.jpg"
 # # Fix Polygon Shapefile Input Issues
 names(polyFile)[names(polyFile)=="SiteNative"] <- "SiteNativeID"  # fix 10 char string
 names(polyFile)[names(polyFile)=="PODorPOUSi"] <- "PODorPOUSite"  # fix 10 char string
-names(polyFile)[names(polyFile)=="Aggregatio"] <- "AggregationIntervalUnitCV"  # fix 10 char string
 names(polyFile)[names(polyFile)=="minTimeFra"] <- "minTimeFrameStart"  # fix 10 char string
 names(polyFile)[names(polyFile)=="maxTimeFra"] <- "maxTimeFrameEnd"  # fix 10 char string
 names(polyFile)[names(polyFile)=="VariableSp"] <- "VariableSpecificCV"  # fix 10 char string
-polyFile$CountVar <- as.numeric(as.character(polyFile$CountVar))  # convert Factors to Integers
+names(polyFile)[names(polyFile)=="Population"] <- "PopulationServed"  # fix 10 char string
+polyFile$WaDENameS <- as.list(strsplit(as.character(polyFile$WaDENameS), ", ")) # convert to correct list format
 polyFile$WaDENameWS <- as.list(strsplit(as.character(polyFile$WaDENameWS), ", ")) # convert to correct list format
+polyFile$WaDENameBU <- as.list(strsplit(as.character(polyFile$WaDENameBU), ", ")) # convert to correct list format
+polyFile$WaDENameV <- as.list(strsplit(as.character(polyFile$WaDENameV), ", ")) # convert to correct list format
+polyFile$TimeStep <- as.list(strsplit(as.character(polyFile$TimeStep), ", ")) # convert to correct list format
+polyFile$PopulationServed <- as.list(strsplit(as.character(polyFile$PopulationServed), ", ")) # convert to correct list format
+polyFile$CountVar <- as.numeric(as.character(polyFile$CountVar))  # convert Factors to Integers
 polyFile$minTimeFrameStart <- as.Date(polyFile$minTimeFrameStart) # convert to date
 polyFile$maxTimeFrameEnd <- as.Date(polyFile$maxTimeFrameEnd) # convert to date
 
 
 # Fix sitesFile File Inputs Issues
+sitesFile$WaDENameS <- as.list(strsplit(as.character(sitesFile$WaDENameS), ", ")) # convert to list format
 sitesFile$WaDENameWS <- as.list(strsplit(as.character(sitesFile$WaDENameWS), ", ")) # convert to list format
+sitesFile$WaDENameBU <- as.list(strsplit(as.character(sitesFile$WaDENameBU), ", ")) # convert to list format
+sitesFile$WaDENameV <- as.list(strsplit(as.character(sitesFile$WaDENameV), ", ")) # convert to list format
+sitesFile$TimeStep <- as.list(strsplit(as.character(sitesFile$TimeStep), ", ")) # convert to list format
+sitesFile$PopulationServed <- as.list(strsplit(as.character(sitesFile$PopulationServed), ", ")) # convert to list format
 sitesFile$minTimeFrameStart <- as.Date(sitesFile$minTimeFrameStart) # convert to date
 sitesFile$maxTimeFrameEnd <- as.Date(sitesFile$maxTimeFrameEnd) # convert to date
+
+
+# Fix link File Inputs Issues
+names(linkFile)[names(linkFile)=="startSiteU"] <- "SiteUUID"  # fix 10 char string
+
 
 # issue of having to try and get the min and max from two different files. Temp fix to hardcode it for now.
 # # Min Max TimeFrameValues
@@ -68,24 +83,53 @@ sitesFile$maxTimeFrameEnd <- as.Date(sitesFile$maxTimeFrameEnd) # convert to dat
 minSiteTime <- as.Date("1955-01-01")
 maxSiteTime <- as.Date("2021-12-31")
 
-
-# fix link file input issues
-names(linkFile)[names(linkFile)=="startSiteU"] <- "SiteUUID"  # fix 10 char string
-
-# Input: Color List
-binList <- c(0,1,2,3,4,5,6,7,8,9,10,11,12)
-colorList <- c("#BFBFBF", "#E9BEB8", "#E3AEA7", "#DD9E96", "#D78E84", "#D17F73", 
-             "#CA6F62", "#C45F52", "#BD5041", "#AC493C", "#9A4236", "#883B31", 
-             "#6C3028")
-
-
 # Input State List
 StateList <- c("CA", "NJ", "NM", "TX", "UT")
 
+# Input SiteTypeCV list
+SiteTypeList <- c("City / District",
+                  "Lake",
+                  "Reservoir",
+                  "Stream Gage",
+                  "Surface Water Point",
+                  "Unspecified",
+                  "Well / Pump / Spring / Groundwater Point")
 
 # Input WaterSourceTypeCV List
-WaterSourceTypeList <- c("Surface Water", "Groundwater", "Unspecified")
+WaterSourceTypeList <- c("Groundwater",
+                         "Reuse",
+                         "Surface Water",
+                         "Surface and Groundwater",
+                         "Unspecified")
 
+# Input BenUse List
+BenUseList <- c("Agriculture Irrigation",
+                "Commercial/Industrial",
+                "Domestic",
+                "Hydroelectric",
+                "Mining",
+                "Municipal Irrigation",
+                "Other",
+                "Public Supply",
+                "Thermoelectric Cooling",
+                "Treated Wastewater/Reuse",
+                "Unspecified")
+
+# Input VariableCV List
+VariableCVList <- c("Consumptive Use",
+                    "Delivered",
+                    "Produced",
+                    "Return",
+                    "Withdrawal")
+
+# Input TimeStepList
+TimeStepList <- c("Annual", "Monthly")
+
+
+# issue of trying to get a min and max slider value to work from a list
+# Input: Max & Min PopulationServed
+# minPopulationServed <- 0
+# maxPopulationServed <- 4061504
 
 # Other Parameters
 clickShape <- NULL

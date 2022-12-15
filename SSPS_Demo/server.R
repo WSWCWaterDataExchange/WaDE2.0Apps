@@ -53,8 +53,8 @@ server <- function(input, output, session) {
       addLegendImage(
         images = LegendImage,
         labels = "",
-        width = 200,
-        height = 300,
+        width = 220,
+        height = 140,
         position = 'bottomright',
         orientation = 'horizontal')
     
@@ -67,25 +67,34 @@ server <- function(input, output, session) {
       
       # Subset of polyRec() data, with custom mapping options.
       polyDataTable <- polyRec()
-      if (input$NoRecordInput == TRUE) {polyDataTable <- polyDataTable %>% subset(CountVar > 0)}
+      polyDataTable <- polyDataTable[sapply(polyDataTable$WaDENameS, function(p) {any(input$SiteTypeInput %in% p)}), ]
       polyDataTable <- polyDataTable[sapply(polyDataTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+      polyDataTable <- polyDataTable[sapply(polyDataTable$WaDENameBU, function(p) {any(input$BenUseInput %in% p)}), ]
+      polyDataTable <- polyDataTable[sapply(polyDataTable$WaDENameV, function(p) {any(input$VariableCVInput %in% p)}), ]
+      polyDataTable <- polyDataTable[sapply(polyDataTable$TimeStep, function(p) {any(input$TimeStepInput %in% p)}), ]
       polyDataTable <- polyDataTable %>% subset((State %in% input$StateInput))
-      polyDataTable <- polyDataTable %>% subset(minTimeFrameStart >= input$sliderInput[1])
-      polyDataTable <- polyDataTable %>% subset(maxTimeFrameEnd <= input$sliderInput[2])
+      polyDataTable <- polyDataTable %>% subset(minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart))
+      polyDataTable <- polyDataTable %>% subset(maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd))
       polyDataTable$polyOpacity  <- ifelse(polyDataTable$CountVar > 0, 0.1, 1.0)
       polyDataTable$polylabel  <- polyDataTable$SiteNativeID
 
       # Subset of sitesRec() data, with custom mapping options.
       siteDataTable <- sitesRec()
-      if (input$NoRecordInput == TRUE) {siteDataTable <- siteDataTable %>% subset(CountVar > 0)}
+      siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameS, function(p) {any(input$SiteTypeInput %in% p)}), ]
       siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
-      siteDataTable <- siteDataTable %>% subset((State %in% input$StateInput))
-      siteDataTable <- siteDataTable %>% filter(minTimeFrameStart >= input$sliderInput[1], maxTimeFrameEnd <= input$sliderInput[2], na.rm = TRUE)
+      siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameBU, function(p) {any(input$BenUseInput %in% p)}), ]
+      siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameV, function(p) {any(input$VariableCVInput %in% p)}), ]
+      siteDataTable <- siteDataTable[sapply(siteDataTable$TimeStep, function(p) {any(input$TimeStepInput %in% p)}), ]
+      siteDataTable <- siteDataTable %>% subset((VariableCV %in% input$VariableCVInput))
+      siteDataTable <- siteDataTable %>% filter((minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart)), (maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd)))
       siteDataTable$siteLabel  <- siteDataTable$SiteNativeID
-     
-      # Color Scale for Map
-      pal <- colorNumeric(palette=colorList, domain=binList)
       
+      # issue of flilter and min max PopulationServed list
+      #siteDataTable <- siteDataTable[sapply(siteDataTable$PopulationServed, function(p) {any(input$PopulationServedSliderInput[1] %in% p)}), ]
+      #siteDataTable <- siteDataTable[sapply(siteDataTable$PopulationServed, function(p) {any(input$PopulationServedSliderInput[2] %in% p)}), ]
+      #siteDataTable <- siteDataTable[sapply(siteDataTable$PopulationServed, function(p) {filter((siteDataTable %>% PopulationServed >= input$PopulationServedSliderInput[1] | is.na(PopulationServed)), (PopulationServed <= input$PopulationServedSliderInput[2] | is.na(PopulationServed))) %in% p}), ]
+
+
       # Call the Map
       SiteMapProxy = leafletProxy(mapId="mapA") %>%
         
@@ -101,7 +110,7 @@ server <- function(input, output, session) {
           weight = 1,
           opacity = 0.5,
           fill = TRUE,
-          fillColor = ~pal(CountVar),
+          fillColor = "#DC3220",
           fillOpacity = 1.0,
           label = ~polylabel,
           group = "SitePoly_A",
@@ -117,10 +126,12 @@ server <- function(input, output, session) {
             "<b>Site Name:</b>", polyDataTable$SiteName, "<br>",
             "<b>Site Type:</b>", polyDataTable$WaDENameS, "<br>",
             "<b>Water Source Type:</b>", polyDataTable$WaDENameWS, "<br>",
-            "<b>Time Step:</b>", polyDataTable$AggregationIntervalUnitCV, "<br>",
+            "<b>Beneficial Use:</b>", polyDataTable$WaDENameBU, "<br>",
+            "<b>Variable Data Type:</b>", polyDataTable$WaDENameV, "<br>",
+            "<b>Population Served:</b>", polyDataTable$PopulationServed, "<br>",
+            "<b>Time Step:</b>", polyDataTable$TimeStep, "<br>",
             "<b>Min Time Frame:</b>", polyDataTable$minTimeFrameStart, "<br>",
             "<b>Max Time Frame:</b>", polyDataTable$maxTimeFrameEnd, "<br>",
-            "<b>Varaible Type:</b>", polyDataTable$VariableCV, "<br>",
             "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', polyDataTable$SiteUUID, '", target=\"_blank\"> Link </a>'))
         ) %>%
         
@@ -131,6 +142,7 @@ server <- function(input, output, session) {
           lng = ~Longitude,
           lat = ~Latitude,
           radius = 2,
+          color = "#005AB5",
           group = "PODSite_A",
           labelOptions = labelOptions(
             noHide = FALSE,
@@ -144,10 +156,12 @@ server <- function(input, output, session) {
             "<b>Site Name:</b>", siteDataTable$SiteName, "<br>",
             "<b>Site Type:</b>", siteDataTable$WaDENameS, "<br>",
             "<b>Water Source Type:</b>", siteDataTable$WaDENameWS, "<br>",
-            "<b>Time Step:</b>", siteDataTable$AggregationIntervalUnitCV, "<br>",
+            "<b>Beneficial Use:</b>", siteDataTable$WaDENameBU, "<br>",
+            "<b>Variable Data Type:</b>", siteDataTable$WaDENameV, "<br>",
+            "<b>Population Served:</b>", siteDataTable$PopulationServed, "<br>",
+            "<b>Time Step:</b>", siteDataTable$TimeStep, "<br>",
             "<b>Min Time Frame:</b>", siteDataTable$minTimeFrameStart, "<br>",
             "<b>Max Time Frame:</b>", siteDataTable$maxTimeFrameEnd, "<br>",
-            "<b>Varaible Type:</b>", siteDataTable$VariableCV, "<br>",
             "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', siteDataTable$SiteUUID, '", target=\"_blank\"> Link </a>'))
         )
     }) #end try
