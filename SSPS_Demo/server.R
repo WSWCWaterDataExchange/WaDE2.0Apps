@@ -85,6 +85,7 @@ server <- function(input, output, session) {
       siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameBU, function(p) {any(input$BenUseInput %in% p)}), ]
       siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameV, function(p) {any(input$VariableCVInput %in% p)}), ]
       siteDataTable <- siteDataTable[sapply(siteDataTable$TimeStep, function(p) {any(input$TimeStepInput %in% p)}), ]
+      siteDataTable <- siteDataTable %>% subset((State %in% input$StateInput))
       siteDataTable <- siteDataTable %>% subset((VariableCV %in% input$VariableCVInput))
       siteDataTable <- siteDataTable %>% filter((minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart)), (maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd)))
       siteDataTable$siteLabel  <- siteDataTable$SiteNativeID
@@ -99,7 +100,7 @@ server <- function(input, output, session) {
       SiteMapProxy = leafletProxy(mapId="mapA") %>%
         
         # Clean Map
-        clearGroup(group=c("PODSite_A", "SitePoly_A")) %>%
+        clearGroup(group=c("PODSite_A", "SitePoly_A", 'LinkToSites')) %>%
         
         # Add Polygons
         addPolygons(
@@ -193,12 +194,20 @@ server <- function(input, output, session) {
     
     # # Subset of LinksSF data that = CWSSVal.
     linkTable <- linkFile %>% subset(SiteUUID %in% clickVal)
+    linkTable <- linkTable[sapply(linkTable$WaDENameS, function(p) {any(input$SiteTypeInput %in% p)}), ]
+    linkTable <- linkTable[sapply(linkTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
+    linkTable <- linkTable[sapply(linkTable$WaDENameBU, function(p) {any(input$BenUseInput %in% p)}), ]
+    linkTable <- linkTable[sapply(linkTable$WaDENameV, function(p) {any(input$VariableCVInput %in% p)}), ]
+    linkTable <- linkTable[sapply(linkTable$TimeStep, function(p) {any(input$TimeStepInput %in% p)}), ]
+    linkTable <- linkTable %>% subset((State %in% input$StateInput))
+    linkTable <- linkTable %>% subset(minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart))
+    linkTable <- linkTable %>% subset(maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd))
     
     # Call the Map
     SiteMapProxy = leafletProxy(mapId="mapA") %>%
       
       # Clean Map
-      clearGroup(group=c("LinkToSites", "HighlightPoly", "HighlightSite")) %>%
+      clearGroup(group=c("LinkToSites")) %>%
       
       # Add Linkss between POUs-to-PODs
       addPolygons(

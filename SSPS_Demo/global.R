@@ -74,6 +74,19 @@ sitesFile$maxTimeFrameEnd <- as.Date(sitesFile$maxTimeFrameEnd) # convert to dat
 
 # Fix link File Inputs Issues
 names(linkFile)[names(linkFile)=="startSiteU"] <- "SiteUUID"  # fix 10 char string
+names(linkFile)[names(linkFile)=="minTimeFra"] <- "minTimeFrameStart"  # fix 10 char string
+names(linkFile)[names(linkFile)=="maxTimeFra"] <- "maxTimeFrameEnd"  # fix 10 char string
+names(linkFile)[names(linkFile)=="VariableSp"] <- "VariableSpecificCV"  # fix 10 char string
+names(linkFile)[names(linkFile)=="Population"] <- "PopulationServed"  # fix 10 char string
+linkFile$WaDENameS <- as.list(strsplit(as.character(linkFile$WaDENameS), ", ")) # convert to correct list format
+linkFile$WaDENameWS <- as.list(strsplit(as.character(linkFile$WaDENameWS), ", ")) # convert to correct list format
+linkFile$WaDENameBU <- as.list(strsplit(as.character(linkFile$WaDENameBU), ", ")) # convert to correct list format
+linkFile$WaDENameV <- as.list(strsplit(as.character(linkFile$WaDENameV), ", ")) # convert to correct list format
+linkFile$TimeStep <- as.list(strsplit(as.character(linkFile$TimeStep), ", ")) # convert to correct list format
+linkFile$PopulationServed <- as.list(strsplit(as.character(linkFile$PopulationServed), ", ")) # convert to correct list format
+linkFile$CountVar <- as.numeric(as.character(linkFile$CountVar))  # convert Factors to Integers
+linkFile$minTimeFrameStart <- as.Date(linkFile$minTimeFrameStart) # convert to date
+linkFile$maxTimeFrameEnd <- as.Date(linkFile$maxTimeFrameEnd) # convert to date
 
 
 # issue of having to try and get the min and max from two different files. Temp fix to hardcode it for now.
