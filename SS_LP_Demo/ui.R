@@ -11,7 +11,7 @@ library(shiny)
 library(shinydashboard) # The layout used for the ui page.
 library(shinycssloaders) # Adds spinner icon to loading outputs.
 library(DT) # Provides an R interface to the JavaScript library DataTables
-library(xlsx) # The xlsx package gives programatic control of Excel files using R
+library(xlsx) # The xlsx package gives programmatic control of Excel files using R
 library(jsonlite) # These functions are used to convert between JSON data and R objects.
 library(curl)  # Drop-in replacement for base url that supports https, ftps, gzip, deflate, etc
 library(rJava) # Low-level interface to Java VM very much like .C/.Call and friends. Allows creation of objects, calling methods and accessing fields.
@@ -28,7 +28,6 @@ library(sf) # how to work & convert data into shapefile info.
 titleWSWC <- tags$a(href='https://www.westernstateswater.org/',
                     tags$img(src='wswclogo.jpg', height=70, width=50),
                     "Site Specific Landing Page Demo")
-
 
 
 ################################################################################################
@@ -91,19 +90,20 @@ ui <- dashboardPage(
       
       # Map
       box(title = "mapA", status = "primary", solidHeader = TRUE, width = 4,
-          leafletOutput(outputId="mapA", height=500)
-          # box content
-      )
+          withSpinner(leafletOutput(outputId="mapA", height=500))
+      ) # box content
     ), #end fluidRow
     
-    # Tables
+    # Tables (Variable, Site Specific Amount, Water Source, Related POD, Related POU)
     fluidRow(
-      tabBox(title = "Table Info", width = 12, side='left', selected = "Variable Specifics Info",
-             tabPanel("Variable Specifics Info",  dataTableOutput("Variable")),
-             tabPanel("Site Specific Amount Info",  dataTableOutput("SiteSpecificAmount")),
-             tabPanel("Water Source Info",  dataTableOutput("WaterSources")),
-             tabPanel("Related POD Sites Info",  dataTableOutput("RelatedPODSites")),
-             tabPanel("Related POU Sites Info",  dataTableOutput("RelatedPOUSites"))
+      withSpinner(
+        tabBox(title = "Table Info", width = 12, side='left', selected = "Variable Specifics Info",
+               tabPanel("Variable Specifics Info",  dataTableOutput("Variable")),
+               tabPanel("Site Specific Amount Info",  dataTableOutput("SiteSpecificAmount")),
+               tabPanel("Water Source Info",  dataTableOutput("WaterSources")),
+               tabPanel("Related POD Sites Info",  dataTableOutput("RelatedPODSites")),
+               tabPanel("Related POU Sites Info",  dataTableOutput("RelatedPOUSites"))
+        )
       )
     ), #end fluidRow
     
@@ -113,6 +113,5 @@ ui <- dashboardPage(
           plotlyOutput(outputId = "LP_A")
       )
     )
-    
   ) #end dashboardBody
 ) #end dashboardPage

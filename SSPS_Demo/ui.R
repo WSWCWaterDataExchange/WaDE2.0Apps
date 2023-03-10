@@ -5,10 +5,10 @@
 # Sec 2. The UI (HTML Page)
 
 ui <- dashboardPage(
-  title = "SS Public Water Supply Dashboard Demo",
+  title = "SS Public Water Supply (SSPS) Dashboard Demo",
   
   dashboardHeader(
-    title = "SS Public Water Supply Dashboard Demo"
+    title = "SS Public Water Supply (SSPS) Dashboard Demo"
   ), #end dashboardHeader
   
   
@@ -16,14 +16,19 @@ ui <- dashboardPage(
     HTML("<h3 style='text-align:center'; class='parallax'>Instructions</h3>
          <p style='text-align:left'; class='parallax_description'>Use filters to narrow down selection if desired.</p>"),
     hr(),
+    
+    # materialSwitch(inputId = "NoRecordInput", label = "Hide No Record Sites?", value = True, status = "warning"),
+    
+    
+    selectizeInput(inputId='SiteNameInput', label='Search Site Name', choice = c('Enter in a Site Name' = '', SiteNameList), multiple=FALSE, selected=NULL),
     pickerInput(inputId='StateInput', label='Select State', choices=StateList, selected=StateList, multiple=TRUE),
     pickerInput(inputId="SiteTypeInput", label="Select Site Type", choices=SiteTypeList, selected=SiteTypeList, multiple=TRUE),
     pickerInput(inputId="WaterSourceTypeInput", label="Select Water Source Type", choices=WaterSourceTypeList, selected=WaterSourceTypeList, multiple=TRUE),
     pickerInput(inputId="BenUseInput", label="Select Beneficial Use Type", choices=BenUseList, selected=BenUseList, multiple=TRUE),
     pickerInput(inputId="VariableCVInput", label="Select Variable Data Type", choices=VariableCVList, selected=VariableCVList, multiple=TRUE),
     pickerInput(inputId="TimeStepInput", label="Select Time Step Type", choices=TimeStepList, selected=TimeStepList, multiple=TRUE),
-    sliderInput("ReportYearSliderInput", label = h3("Min & Max Time"), min = minSiteTime, max = maxSiteTime, value = c(minSiteTime, maxSiteTime))
-    #sliderInput("PopulationServedSliderInput", label = h3("Min & Max PopulationServed"), min = minPopulationServed, max = maxPopulationServed, value = c(minPopulationServed, maxPopulationServed))
+    sliderInput("ReportYearSliderInput", label = h3("Min & Max Time"), min = minSiteTime, max = maxSiteTime, value = c(minSiteTime, maxSiteTime)),
+    sliderInput("PopulationServedSliderInput", label = h3("Min & Max Population Served"), min = minPopulationServed, max = maxPopulationServed, value = c(minPopulationServed, maxPopulationServed))
   ), # end dashboardSidebar
   
   dashboardBody(

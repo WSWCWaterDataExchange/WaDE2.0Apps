@@ -5,10 +5,10 @@ account: waterdataexchangewswc
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7359619
-bundleId: 6617630
+bundleId: 6875251
 url: https://waterdataexchangewswc.shinyapps.io/SiteSpecificPublicSupplyWaterDemo/
-when: 1670621293.62153
-lastSyncTime: 1670621293.62153
+when: 1677083388.07121
+lastSyncTime: 1677083388.07121
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: ReadME.md|NotEssentialData
+ignoredFiles: Notes.txt|ReadME.md|bonus code|NotEssentialData

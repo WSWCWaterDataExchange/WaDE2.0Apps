@@ -18,6 +18,10 @@ server <- function(input, output, session) {
     polyFile
   })
   
+  # HUC12Rec <- reactive({
+  #   HUC12File
+  # })
+  
   
   
   ##################################################################
@@ -43,8 +47,11 @@ server <- function(input, output, session) {
       addProviderTiles(provider=providers$Esri.WorldTopoMap, group="WorldTopoMap") %>%
       addProviderTiles(provider=providers$Esri.WorldImagery, group="WorldImagery") %>%
       addLayersControl(
+        overlayGroups = c("POD Site", "POU Polygon", "HUC12"),
         baseGroups = c("WorldGrayCanvas", "WorldStreetMap", "DeLorme", "WorldTopoMap", "WorldImagery"),
         options = layersControlOptions(collapsed = FALSE)) %>%
+      
+      hideGroup("HUC12") %>%
       
       # Set starting view / zoom level
       setView(lng = -98.0, lat = 35.0, zoom = 5) %>%
@@ -75,9 +82,11 @@ server <- function(input, output, session) {
       polyDataTable <- polyDataTable %>% subset((State %in% input$StateInput))
       polyDataTable <- polyDataTable %>% subset(minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart))
       polyDataTable <- polyDataTable %>% subset(maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd))
+      polyDataTable <- polyDataTable %>% subset(minPopulationServed >= input$PopulationServedSliderInput[1] | is.na(minPopulationServed))
+      polyDataTable <- polyDataTable %>% subset(maxPopulationServed <= input$PopulationServedSliderInput[2] | is.na(maxPopulationServed))
       polyDataTable$polyOpacity  <- ifelse(polyDataTable$CountVar > 0, 0.1, 1.0)
-      polyDataTable$polylabel  <- polyDataTable$SiteNativeID
-
+      polyDataTable$polylabel  <- paste0(polyDataTable$SiteName," : ", polyDataTable$SiteNativeID)
+      
       # Subset of sitesRec() data, with custom mapping options.
       siteDataTable <- sitesRec()
       siteDataTable <- siteDataTable[sapply(siteDataTable$WaDENameS, function(p) {any(input$SiteTypeInput %in% p)}), ]
@@ -88,33 +97,53 @@ server <- function(input, output, session) {
       siteDataTable <- siteDataTable %>% subset((State %in% input$StateInput))
       siteDataTable <- siteDataTable %>% subset((VariableCV %in% input$VariableCVInput))
       siteDataTable <- siteDataTable %>% filter((minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart)), (maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd)))
-      siteDataTable$siteLabel  <- siteDataTable$SiteNativeID
+      siteDataTable <- siteDataTable %>% filter((minPopulationServed >= input$PopulationServedSliderInput[1] | is.na(minPopulationServed)), (maxPopulationServed <= input$PopulationServedSliderInput[2] | is.na(maxPopulationServed)))
+      siteDataTable$siteLabel  <- paste0(siteDataTable$SiteName, " : ", siteDataTable$SiteNativeID)
       
-      # issue of flilter and min max PopulationServed list
-      #siteDataTable <- siteDataTable[sapply(siteDataTable$PopulationServed, function(p) {any(input$PopulationServedSliderInput[1] %in% p)}), ]
-      #siteDataTable <- siteDataTable[sapply(siteDataTable$PopulationServed, function(p) {any(input$PopulationServedSliderInput[2] %in% p)}), ]
-      #siteDataTable <- siteDataTable[sapply(siteDataTable$PopulationServed, function(p) {filter((siteDataTable %>% PopulationServed >= input$PopulationServedSliderInput[1] | is.na(PopulationServed)), (PopulationServed <= input$PopulationServedSliderInput[2] | is.na(PopulationServed))) %in% p}), ]
-
-
+      # Search for Site Name Filter
+      # Due to order of operations, this has to come after the sapply() filters, as sapply() cannot accept an empty list.
+      if (input$SiteNameInput != "") {
+        polyDataTable <- polyDataTable %>% subset((SiteName == input$SiteNameInput))
+        siteDataTable <- siteDataTable %>% subset((SiteName == input$SiteNameInput))
+      }
+      
+      
+      # # HUC12 Polygon Data
+      # if (input$NoRecordInput == TRUE) {HUC12Rec() <- sitedatatable %>% subset(RecordCheck == 1)}
+      
+      
       # Call the Map
       SiteMapProxy = leafletProxy(mapId="mapA") %>%
         
         # Clean Map
-        clearGroup(group=c("PODSite_A", "SitePoly_A", 'LinkToSites')) %>%
+        clearGroup(group=c("POD Site", "POU Polygon", 'LinkToSites')) %>%
+        
+        # hideGroup("HUC12") %>%
+        
+        # Add HUC12 Polygons
+        addPolygons(
+          data = HUC12File,
+          stroke = TRUE,
+          color = "black",
+          weight = 1,
+          fill = F,
+          group = "HUC12",
+          options = pathOptions(clickable = FALSE)
+        ) %>%
         
         # Add Polygons
         addPolygons(
           data = polyDataTable,
           layerId = ~SiteUUID,
+          group = "POU Polygon",
           stroke = TRUE,
-          color = "black",
-          weight = 1,
-          opacity = 0.5,
+          color = ~HasLinksColor,
+          weight = 1.2,
+          opacity = 0.7,
           fill = TRUE,
           fillColor = "#DC3220",
-          fillOpacity = 1.0,
+          fillOpacity = 0.8,
           label = ~polylabel,
-          group = "SitePoly_A",
           labelOptions = labelOptions(
             noHide = FALSE,
             textOnly = FALSE,
@@ -129,7 +158,8 @@ server <- function(input, output, session) {
             "<b>Water Source Type:</b>", polyDataTable$WaDENameWS, "<br>",
             "<b>Beneficial Use:</b>", polyDataTable$WaDENameBU, "<br>",
             "<b>Variable Data Type:</b>", polyDataTable$WaDENameV, "<br>",
-            "<b>Population Served:</b>", polyDataTable$PopulationServed, "<br>",
+            "<b>Min Population Served:</b>", polyDataTable$minPopulationServed, "<br>",
+            "<b>Max Population Served:</b>", polyDataTable$maxPopulationServed, "<br>",
             "<b>Time Step:</b>", polyDataTable$TimeStep, "<br>",
             "<b>Min Time Frame:</b>", polyDataTable$minTimeFrameStart, "<br>",
             "<b>Max Time Frame:</b>", polyDataTable$maxTimeFrameEnd, "<br>",
@@ -140,17 +170,37 @@ server <- function(input, output, session) {
         addCircleMarkers(
           data = siteDataTable,
           layerId = ~SiteUUID,
+          group = "POD Site",
           lng = ~Longitude,
           lat = ~Latitude,
-          radius = 2,
-          color = "#005AB5",
-          group = "PODSite_A",
+          radius = 4,
+          stroke = TRUE,
+          color = ~HasLinksColor,
+          weight = 0.7,
+          opacity = 1,
+          fill = TRUE,
+          fillColor = "#005AB5",
+          fillOpacity = 1.0,
+          label = ~siteLabel,
           labelOptions = labelOptions(
             noHide = FALSE,
             textOnly = FALSE,
             textsize = "7px",
             opacity = 0.8,
             direction = 'top'),
+          clusterOptions = markerClusterOptions(
+            maxClusterRadius = 0.01,
+            iconCreateFunction = JS("function (cluster) {
+            var childCount = cluster.getChildCount();
+            c = 'rgba(39, 50, 245, 0.8);'
+            var size = 1/100;
+            return new L.DivIcon({ 
+              html: '<div style=\"background-color:'+c+'\"><span>' + childCount + '</span></div>', 
+              className: 'marker-cluster', 
+              iconSize: new L.Point(size, size) 
+            });
+            }")
+          ),
           popup = paste(
             "<b>Native Site ID:</b>", siteDataTable$SiteNativeID, "<br>",
             "<b>WaDE Site ID:</b>", siteDataTable$SiteUUID, "<br>",
@@ -159,7 +209,8 @@ server <- function(input, output, session) {
             "<b>Water Source Type:</b>", siteDataTable$WaDENameWS, "<br>",
             "<b>Beneficial Use:</b>", siteDataTable$WaDENameBU, "<br>",
             "<b>Variable Data Type:</b>", siteDataTable$WaDENameV, "<br>",
-            "<b>Population Served:</b>", siteDataTable$PopulationServed, "<br>",
+            "<b>Min Population Served:</b>", siteDataTable$minPopulationServed, "<br>",
+            "<b>Max Population Served:</b>", siteDataTable$maxPopulationServed, "<br>",
             "<b>Time Step:</b>", siteDataTable$TimeStep, "<br>",
             "<b>Min Time Frame:</b>", siteDataTable$minTimeFrameStart, "<br>",
             "<b>Max Time Frame:</b>", siteDataTable$maxTimeFrameEnd, "<br>",
@@ -192,7 +243,31 @@ server <- function(input, output, session) {
   # Create Heighlight Area and Points Function
   createHeighlightMapFunc <- function(clickVal) {
     
-    # # Subset of LinksSF data that = CWSSVal.
+    # Call the Map
+    SiteMapProxy = leafletProxy(mapId="mapA") %>%
+      
+      # Clean Map
+      clearGroup(group=c("LinkToSites")) %>%
+      
+      # Add Links between Sites
+      addPolygons(
+        # data = linkTable,
+        group = "LinkToSites",
+        data = createlinkTableFunc(clickVal),
+        color = "limegreen",
+        weight = 1.0,
+        opacity = 1.0,
+        fillOpacity = 0,
+        options = pathOptions(clickable = FALSE))
+    
+    return(SiteMapProxy)
+  } #end createHeighlightMapFunc
+  
+  
+  # Create Data Functions
+  ###################################################
+  createlinkTableFunc <- function(clickVal) {
+    # Subset of LinksSF data that = CWSSVal.
     linkTable <- linkFile %>% subset(SiteUUID %in% clickVal)
     linkTable <- linkTable[sapply(linkTable$WaDENameS, function(p) {any(input$SiteTypeInput %in% p)}), ]
     linkTable <- linkTable[sapply(linkTable$WaDENameWS, function(p) {any(input$WaterSourceTypeInput %in% p)}), ]
@@ -202,24 +277,10 @@ server <- function(input, output, session) {
     linkTable <- linkTable %>% subset((State %in% input$StateInput))
     linkTable <- linkTable %>% subset(minTimeFrameStart >= input$ReportYearSliderInput[1] | is.na(minTimeFrameStart))
     linkTable <- linkTable %>% subset(maxTimeFrameEnd <= input$ReportYearSliderInput[2] | is.na(maxTimeFrameEnd))
-    
-    # Call the Map
-    SiteMapProxy = leafletProxy(mapId="mapA") %>%
-      
-      # Clean Map
-      clearGroup(group=c("LinkToSites")) %>%
-      
-      # Add Linkss between POUs-to-PODs
-      addPolygons(
-        data = linkTable,
-        color = "Yellow",
-        weight = 0.5,
-        opacity = 1.0,
-        fillOpacity = 0,
-        group = "LinkToSites",
-        options = pathOptions(clickable = FALSE))
-    
-    return(SiteMapProxy)
-  }
+    linkTable <- linkTable %>% subset(minPopulationServed >= input$PopulationServedSliderInput[1] | is.na(minPopulationServed))
+    linkTable <- linkTable %>% subset(maxPopulationServed <= input$PopulationServedSliderInput[2] | is.na(maxPopulationServed))
+    return(linkTable)
+  } #end createlinkTableFunc
+  
   
 } #endServer

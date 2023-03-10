@@ -82,18 +82,18 @@ server <- function(input, output, session) {
   observe({
     
     ######## Populate Page Outputs ########
-    #org
+    #org Card
     output$OrganizationName <- renderText(OrganizationFunc()[['OrganizationName']])
     output$State <- renderText(OrganizationFunc()[['OrganizationState']])
     output$Website <- renderText(OrganizationFunc()[['OrganizationWebsite']])
     
-    #method
+    #method Card
     output$ApplicableResourceType <- renderText(MethodFunc()[['ApplicableResourceType']])
     output$MethodType <- renderText(MethodFunc()[['MethodTypeCV']])
     output$MethodLink <- renderText(MethodFunc()[['MethodNEMILink']])
     output$MethodDescription <- renderText(MethodFunc()[['MethodDescription']])
     
-    #site
+    #site Card
     output$WaDESiteID <- renderText(SiteFunc()[['SiteUUID']])
     output$SiteNativeID <- renderText(SiteFunc()[['NativeSiteID']])
     output$SiteName <- renderText("TBD, API Bug") # output$SiteName <- renderText(SiteFunc()[[1]])
@@ -103,25 +103,24 @@ server <- function(input, output, session) {
     output$SiteType <- renderText("TBD, API Bug") # output$SiteType <-renderText(SiteFunc()[[1]])
     output$PODorPOU <- renderText(SiteFunc()[['PODorPOUSite']])
     
-    #variable
+    #variable Table
     output$Variable <- DT::renderDataTable(VariableFunc(), options = list(scrollX = TRUE));
     
-    #sitespecific
+    #sitespecific Table
     output$SiteSpecificAmount <- DT::renderDataTable(SiteSpecificAmountFunc(), options = list(scrollX = TRUE));
     
-    #watersource
+    #watersource Table
     output$WaterSources <- DT::renderDataTable(WaterSourcesFunc(), options = list(scrollX = TRUE));
     
-    #relatedPODsites
+    #relatedPODsites Table
     output$RelatedPODSites <- DT::renderDataTable(RelatedPODSitesFunc(), escape = FALSE, options = list(scrollX = TRUE));
     
-    #relatedPOUISites
+    #relatedPOUISites Table
     output$RelatedPOUSites <- DT::renderDataTable(RelatedPOUSitesFunc(), options = list(scrollX = TRUE));
     
     
     ######## Create mapA Output ######## 
     try({
-      # createPolyMapFunc()
       if(is.na(SiteFunc()$SiteGeometry) == FALSE) {
         print("Yes Geometry")
         inputData <- sf::st_as_sf(SiteFunc(), wkt = "SiteGeometry")
@@ -220,10 +219,21 @@ server <- function(input, output, session) {
     if(length(filteredSite()[['Organizations']]) == 0) {
       RelatedPODSites <- data.frame(EmptyTable=double())
     } else {
-      RelatedPODSites <- filteredSite()[['Organizations']][['Sites']][[1]][['RelatedPODSites']][[1]]
+      RelatedPODSites <- unique(filteredSite()[['Organizations']][['Sites']][[1]][['RelatedPODSites']][[1]][1]) # unique values only
+      row.names(RelatedPODSites) <- NULL # reset row index
       if(length(RelatedPODSites) == 0) {
         RelatedPODSites <- data.frame(EmptyTable=double())
       } else {
+        RelatedPODSitesList <- as.list(RelatedPODSites$SiteUUID)
+        RelatedPODSites <- data.frame() # reset dataframe
+        for (p in RelatedPODSitesList) {
+          str1 <- "https://wade-api-uat.azure-api.net/v1/SiteVariableAmounts?SiteUUID="
+          str2 <- p[1]
+          keyStr <- "key=38f422d1ada34907a91aff4532fa4669"
+          outString <- paste0(str1,str2,"&",keyStr)
+          returnVal <- fromJSON(outString)[['Organizations']][['Sites']][[1]]
+          RelatedPODSites <- rbind(RelatedPODSites, returnVal)
+        }
         RelatedPODSites$SiteUUID <- paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', RelatedPODSites$SiteUUID, '", target=\"_blank\">', RelatedPODSites$SiteUUID, '</a>')
       }
     }
@@ -237,11 +247,25 @@ server <- function(input, output, session) {
     if(length(filteredSite()[['Organizations']]) == 0) {
       RelatedPOUSites <- data.frame(EmptyTable=double())
     } else {
-      RelatedPOUSites <- filteredSite()[['Organizations']][['Sites']][[1]][['RelatedPOUSites']][[1]]
+      RelatedPOUSites <- unique(filteredSite()[['Organizations']][['Sites']][[1]][['RelatedPOUSites']][[1]][1]) # unique values only
+      row.names(RelatedPOUSites) <- NULL # reset row index
       if(length(RelatedPOUSites) == 0) {
         RelatedPOUSites <- data.frame(EmptyTable=double())
       } else {
-        RelatedPOUSites$SiteUUID <- paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', RelatedPOUSites$SiteUUID, '", target=\"_blank\">', RelatedPOUSites$SiteUUID, '</a>')
+        RelatedPOUSitesList <- as.list(RelatedPOUSites$SiteUUID)
+        RelatedPOUSites <- data.frame() # reset dataframe
+        for (p in RelatedPOUSitesList) {
+          str1 <- "https://wade-api-uat.azure-api.net/v1/SiteVariableAmounts?SiteUUID="
+          str2 <- p[1]
+          keyStr <- "key=38f422d1ada34907a91aff4532fa4669"
+          outString <- paste0(str1,str2,"&",keyStr)
+          returnVal <- fromJSON(outString)[['Organizations']][['Sites']][[1]]
+          RelatedPOUSites <- rbind(RelatedPOUSites, returnVal)
+        }
+        
+        # can't ge this url to paste correctly.
+        #RelatedPOUSites$SiteUUID <- paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', RelatedPOUSites$SiteUUID, '", target=\"_blank\">', RelatedPOUSites$SiteUUID, '</a>')
+        
       }
     }
     return(RelatedPOUSites)
@@ -256,7 +280,15 @@ server <- function(input, output, session) {
         lng = inputData$Longitude,
         lat = inputData$Latitude,
         zoom = 10) %>%
-      clearGroup(group=c("SiteGroup")) %>%
+      clearGroup(group=c("SiteGroup", "AreaGroup")) %>%
+      
+      # can't seem to get the POU to show up correctly...
+      try(
+        addPolygons(
+          data = RelatedPOUSitesFunc(),
+          group = "AreaGroup") 
+      ) %>%
+      
       addCircleMarkers(
         data = inputData,
         layerId = ~SiteUUID,
@@ -279,7 +311,7 @@ server <- function(input, output, session) {
           "<b>Varaible Type:</b>", inputData$VariableCV, "<br>",
           "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', inputData$SiteUUID, '", target=\"_blank\"> Link </a>'))
       )
-    return(SiteMapProxy)
+    return()
   }
   
   #------------------------
@@ -289,10 +321,34 @@ server <- function(input, output, session) {
     bbox <- st_bbox(inputData) %>% as.vector()
     AreaMapProxy = leafletProxy(mapId="mapA") %>%
       fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>%
-      clearGroup(group=c("AreaGroup")) %>%
+      clearGroup(group=c("SiteGroup", "AreaGroup")) %>%
       addPolygons(
         data = inputData,
-        group = "AreaGroup")
+        group = "AreaGroup") %>%
+      addCircleMarkers(
+        data = RelatedPODSitesFunc(),
+        layerId = ~SiteUUID,
+        lng = ~Longitude,
+        lat = ~Latitude,
+        radius = 2,
+        color = "red",
+        fillColor = "red",
+        group = "SiteGroup",
+        labelOptions = labelOptions(
+          noHide = FALSE,
+          textOnly = FALSE,
+          textsize = "7px",
+          opacity = 0.8,
+          direction = 'top'),
+        popup = paste(
+          "<b>Native Site ID:</b>", inputData$SiteNativeID, "<br>",
+          "<b>WaDE Site ID:</b>", inputData$SiteUUID, "<br>",
+          "<b>Site Name:</b>", inputData$SiteName, "<br>",
+          "<b>Site Type:</b>", inputData$WaDENameS, "<br>",
+          "<b>Water Source Type:</b>", inputData$WaDENameWS, "<br>",
+          "<b>Varaible Type:</b>", inputData$VariableCV, "<br>",
+          "<b>Additional Info:</b>", paste0('<a href="https://waterdataexchangewswc.shinyapps.io/SiteSpecificLandingPadgeDemo?SQPInput=', inputData$SiteUUID, '", target=\"_blank\"> Link </a>'))
+      )
     return()
   }
   
@@ -316,7 +372,7 @@ server <- function(input, output, session) {
       AmountsData_v3$TimeframeStart <- as.Date(AmountsData_v3$TimeframeStart)
       SiteUUIDstring <- unique(AmountsData_v3$SiteUUID)
       AmountsData_v3 <- ungroup(AmountsData_v3) # Error in plotly not using lines with group_by() function.
-  
+      
       # The Plot
       LP_A <- plot_ly(data=AmountsData_v3, x=~TimeframeStart, y=~SumAmount,
                       # color=~VariableSpecificTypeCV, # temp fix
@@ -326,8 +382,7 @@ server <- function(input, output, session) {
                               paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
                               xaxis = list(title="Report Time"),
                               yaxis = list(title="Sum of Water Amount"),
-                              # legend = list(title=list(text='<b>VariableSpecificTypeCV</b>')), #temp fix
-                              legend = list(title=list(text='<b>VariableSpecificCV</b>')),
+                              legend = list(title=list(text='<b>VariableSpecificCV</b>\n<i>(Variable_Aggregation Interval Unit_Beneficial Use_Water Source Type)</i>')),
                               showlegend=TRUE)
       LP_A
     })
@@ -355,31 +410,31 @@ server <- function(input, output, session) {
   
   
   
-  observe({
-    output$downloadDataOuput <- downloadHandler(
-      
-      filename = function() {"WaDE_Data_Download.xlsx"},
-      content = function(file) {
-        
-        Method <- MethodFunc()
-        Variable <- VariableFunc()
-        Organization <- OrganizationFunc()[1:7]
-        WaterSources <- WaterSourcesFunc()
-        Sites <- SiteFunc()[1:11]
-        SiteSpecificAmount <- SiteSpecificAmountFunc()[1:31]
-        RelatedPODSites <- RelatedPODSitesFunc()[1:3]
-        RelatedPOUSites <- RelatedPOUSitesFunc()[1:3]
-        
-        # write workbook
-        listFiles <- list(Method, Variable, Organization, WaterSources, Sites, SiteSpecificAmount, RelatedPODSites)
-        listNames <- list("Method", "Variable", "Organization", "WaterSources", "Sites", "SiteSpecificAmount", "RelatedPODSites", "RelatedPOUSites")
-        for(i in 1:length(listFiles)) {
-          write.xlsx(x=listFiles[i], file=file, sheetName=listNames[i], append = TRUE)
-        }
-      } #end content
-    ) #end downloadHandler
-    
-  })
+  # observe({
+  #   output$downloadDataOuput <- downloadHandler(
+  #     
+  #     filename = function() {"WaDE_Data_Download.xlsx"},
+  #     content = function(file) {
+  #       
+  #       Method <- MethodFunc()
+  #       Variable <- VariableFunc()
+  #       Organization <- OrganizationFunc()[1:7]
+  #       WaterSources <- WaterSourcesFunc()
+  #       Sites <- SiteFunc()[1:11]
+  #       SiteSpecificAmount <- SiteSpecificAmountFunc()[1:31]
+  #       RelatedPODSites <- RelatedPODSitesFunc()[1:3]
+  #       RelatedPOUSites <- RelatedPOUSitesFunc()[1:3]
+  #       
+  #       # write workbook
+  #       listFiles <- list(Method, Variable, Organization, WaterSources, Sites, SiteSpecificAmount, RelatedPODSites)
+  #       listNames <- list("Method", "Variable", "Organization", "WaterSources", "Sites", "SiteSpecificAmount", "RelatedPODSites", "RelatedPOUSites")
+  #       for(i in 1:length(listFiles)) {
+  #         write.xlsx(x=listFiles[i], file=file, sheetName=listNames[i], append = TRUE)
+  #       }
+  #     } #end content
+  #   ) #end downloadHandler
+  #   
+  # })
   
   
 } #End server
