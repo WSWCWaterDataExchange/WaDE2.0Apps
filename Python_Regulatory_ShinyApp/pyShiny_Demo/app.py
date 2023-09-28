@@ -19,6 +19,7 @@ raw_data_pd = pd.DataFrame(raw_data)
 states = raw_data_pd["StateCV"].unique().tolist()
 overlays = raw_data_pd["Reportin_3"].unique().tolist()
 water_sources = raw_data_pd['WaDENameWS'].unique().tolist()
+types = raw_data_pd["WaDENameRO"].unique().tolist()
 
 #dictionary between StateCV and dataframe for the state
 states_id_data_dict = {}
@@ -74,7 +75,9 @@ app_ui = ui.page_fluid(
                                , multiple=True),
             ui.input_selectize('WS', 'Select Water Source Type', choices = water_sources, multiple = True),
             ui.input_selectize('RO', 'Select Administrative/Regulatory Overlay', choices = [],\
-                               multiple = True)
+                               multiple = True),
+            ui.input_selectize('AoR', 'Select Administrative or Regulatory', choices = types,\
+                               multiple= True)
         ),#end column
         ui.column(
             9,
@@ -87,7 +90,7 @@ app_ui = ui.page_fluid(
 # define server
 def server(input, output, session):
     #insert map with all boundaries
-    my_map = ipyl.Map(basemap=basemaps.Esri.WorldTopoMap, center = center_coords, zoom = 3)
+    my_map = ipyl.Map(basemap=basemaps.Esri.WorldTopoMap, center = center_coords, zoom = 4, layout=dict(height="600px"))
     register_widget("my_map", my_map)
     all_overlays = GeoData(geo_dataframe = raw_data, style = {'weight': .5, 'fillOpacity':0.1},\
                            hover_style = {'fillColor':'red', 'fillOpacity': .5})
@@ -122,7 +125,26 @@ def server(input, output, session):
                     print("map removed")
                 my_map.add_layer(overlay_boundary)
 
-# "select water source" interaction with boundaries  
+    # "select administrative or regulatory" interaction with boundaries
+    @reactive.Effect
+    def boundaries_by_type():
+        selected_states = input.States()
+        select_type = input.AoR()
+        filtered_data = raw_data[
+            (raw_data['StateCV'].isin(selected_states)) &
+            (raw_data['WaDENameRO'].isin(select_type))]
+        type_boundary = GeoData(geo_dataframe=filtered_data, style={'weight': 0.5,\
+            'fillOpacity': 0.1},
+            hover_style={'fillColor': 'red', 'fillOpacity': 0.5}
+            )#end watersource_boundary
+        if select_type:
+            try:
+                my_map.remove_layer(all_overlays)
+            except:
+                print('removed mpa')
+            my_map.add_layer(type_boundary)
+
+    # "select water source" interaction with boundaries  
     @reactive.Effect
     def boundaries_by_watersource():
         selected_states = input.States()
@@ -140,7 +162,7 @@ def server(input, output, session):
             except:
                 print('removed mpa')
             my_map.add_layer(watersource_boundary)
-            
+
 #if neither States nor RO are selected, add back the all_overlays layer
         elif not (input.States() or input.RO()):
             try:
@@ -148,6 +170,10 @@ def server(input, output, session):
             except:
                 print('removed map')
             my_map.add_layer(all_overlays)
+        
+
+            
+
 
 #define app
 www_dir = Path(__file__).parent / "www"
