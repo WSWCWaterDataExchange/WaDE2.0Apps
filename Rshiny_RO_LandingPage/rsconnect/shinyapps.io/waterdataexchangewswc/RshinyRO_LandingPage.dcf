@@ -1,0 +1,13 @@
+name: RshinyRO_LandingPage
+title: RshinyRO_LandingPage
+username: waterdataexchangewswc
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10691362
+bundleId:
+url: https://waterdataexchangewswc.shinyapps.io/RshinyRO_LandingPage/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: ._global.R|._server.R|._ui.R|._www

@@ -1,0 +1,14 @@
+name: Rshiny_RO_Map
+title: Rshiny_RO_Map
+username:
+account: waterdataexchangewswc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10691307
+bundleId: 8007398
+url: https://waterdataexchangewswc.shinyapps.io/Rshiny_RO_Map/
+when: 1701729864.70792
+lastSyncTime: 1701729864.70793
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: bonus code/.ipynb_checkpoints/Format_REInput_Tables-checkpoint.ipynb|bonus code/converttablerdata.R|bonus code/Format_REInput_Tables.ipynb|bonus code/SQL_Get RE Tables.sql|NotEssentialData

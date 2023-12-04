@@ -1,0 +1,11 @@
+library(shiny)
+library(shinydashboard)
+library(sf)
+library(leaflet)
+library(dplyr)
+
+raw_data <- sf:: st_read('data/reportingunits_regulatoryoverlays_v2.shp')
+State <- as.list(unique(raw_data$StateCV))
+WaterSource <- as.list(unique(raw_data$WaDENameWS))
+Overlay <- as.list(unique(raw_data$Reportin_3))
+Type <- as.list(unique(raw_data$WaDENameRO))
